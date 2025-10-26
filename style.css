@@ -1,3 +1,8 @@
+/* --- Forzar bloqueo de scroll horizontal --- */
+html {
+    overflow-x: hidden;
+}
+
 /* --- Estilos Generales --- */
 body {
     font-family: Arial, sans-serif;
@@ -8,6 +13,8 @@ body {
     min-height: 100vh; /* Asegura que el footer quede abajo */
     display: flex; /* Permite que el footer se quede abajo */
     flex-direction: column; /* Organiza los elementos verticalmente */
+    /* *** NUEVO: Evitar scroll horizontal general *** */
+    overflow-x: hidden;
 }
 
 /* --- Encabezado --- */
@@ -23,25 +30,38 @@ header {
 /* --- Barra Superior con Banner --- */
 .top-bar {
     background-color: #fff;
-    padding: 0.5rem 2rem;
+    padding: 0.5rem 0; /* Ajustar padding */
     border-bottom: 1px solid #eee;
-    display: flex;
-    justify-content: space-between;
+    display: flex; /* Cambiado de flex a block para overflow */
+    justify-content: center; /* Centrar el contenedor de logos */
     align-items: center;
+    /* *** NUEVO: Ocultar desbordamiento y altura fija *** */
+    overflow: hidden;
+    height: 50px; /* Altura fija para la barra (ajustar según logos) */
+    position: relative; /* Para la animación */
 }
 
-.top-bar a {
-    display: block;
-    width: auto;
-    line-height: 0;
+/* Contenedor de logos */
+.barra-logos-scroll {
+    /* *** NUEVO: Usar flex para alinear logos y animar *** */
+    display: flex;
+    align-items: center;
+    width: max-content; /* Ancho basado en el contenido */
+    position: absolute; /* Para poder animar el translateX */
+    left: 0; /* Empezar desde la izquierda */
+    /* La animación se definirá en la media query */
 }
 
-.top-bar img {
+.barra-logos-scroll img {
+    height: 35px; /* Altura fija para los logos */
     width: auto;
-    height: auto;
-    display: block;
-    max-height: 60px;
-    object-fit: contain;
+    margin: 0 15px; /* Espacio entre logos */
+    flex-shrink: 0; /* Evitar que los logos se encojan */
+}
+
+/* Ocultar formulario de búsqueda original en top-bar SIEMPRE */
+.top-bar #search-form {
+    display: none;
 }
 /* --- Fin Barra Superior --- */
 
@@ -53,6 +73,7 @@ header {
     padding: 1rem 2rem;
     max-width: 1200px;
     margin: 0 auto;
+    position: relative; /* Añadido para z-index del menú */
 }
 
 .logo h1 {
@@ -165,6 +186,31 @@ header {
 }
 #logout-button:hover {
     background-color: #555;
+}
+
+/* --- Buscador en NAV (oculto en desktop) --- */
+#search-form-nav {
+    display: none; /* Oculto por defecto */
+    padding: 1rem 2rem; /* Espaciado dentro del menú */
+    background-color: #f8f8f8;
+    border-top: 1px solid #eee;
+}
+#search-form-nav input {
+    width: calc(100% - 80px); /* Ancho menos el botón */
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 20px 0 0 20px;
+    font-size: 0.9rem;
+}
+#search-form-nav button {
+    padding: 10px 15px;
+    border: 1px solid #e91e63;
+    background-color: #e91e63;
+    color: white;
+    border-radius: 0 20px 20px 0;
+    cursor: pointer;
+    margin-left: -1px; /* Superponer */
+    font-size: 0.9rem;
 }
 
 
@@ -448,7 +494,7 @@ footer p { margin: 0; font-size: 0.9rem; color: #555;}
 .consultora-container img { width: 100%; height: auto; border-radius: 8px; margin-bottom: 2.5rem; max-height: 400px; object-fit: cover; }
 .consultora-container h3 { font-size: 1.8rem; color: #e91e63; margin-top: 2rem; margin-bottom: 1rem; border-bottom: 2px solid #f0f0f0; padding-bottom: 0.5rem; }
 .consultora-container p { font-size: 1rem; line-height: 1.6; color: #444; margin-bottom: 1rem;}
-.beneficios-lista { list-style-type: none; padding-left: 0; margin: 1.5rem 0; }
+.beneficios-lista { list-style: none; padding-left: 0; margin: 1.5rem 0; }
 .beneficios-lista li { font-size: 1rem; color: #333; padding-left: 2rem; margin-bottom: 0.75rem; position: relative; }
 .beneficios-lista li::before { content: '✔'; color: #e91e63; position: absolute; left: 0; top: 0; font-size: 1.2rem; }
 .boton-consultora { background-color: #e91e63; color: white; border: none; padding: 15px 30px; font-size: 1.1rem; font-weight: bold; border-radius: 30px; cursor: pointer; transition: background-color 0.3s ease; text-decoration: none; display: table; margin: 2rem auto 0 auto; }
@@ -623,38 +669,8 @@ footer p { margin: 0; font-size: 0.9rem; color: #555;}
 #loading-categories-admin { text-align: center; color: #777; font-style: italic; padding: 1rem; }
 
 
-/* --- Estilos del Buscador (Header) --- */
-#search-form {
-    display: flex;
-    gap: 0.5rem;
-    max-width: 400px;
-    margin: 0;
-    flex-grow: 1;
-    margin-left: 2rem;
-}
-
-#search-input {
-    flex-grow: 1;
-    padding: 10px 15px;
-    font-size: 0.9rem;
-    border: 1px solid #ddd;
-    border-radius: 30px;
-}
-
-#search-button {
-    background-color: #e91e63;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    font-size: 0.9rem;
-    font-weight: bold;
-    border-radius: 30px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-#search-button:hover {
-    background-color: #d81b60;
-}
+/* --- Estilos del Buscador (Header NAV - oculto en desktop) --- */
+/* (Estilos movidos a la sección responsive) */
 
 /* Contenedor de resultados (página de búsqueda) */
 #search-results-list {
@@ -908,7 +924,6 @@ main#search-results-page-container .mensaje-vacio {
 /* ============================================== */
 
 /* --- Estilos del Icono de Hamburguesa --- */
-/* (Añadido fuera de la media query) */
 .hamburger-menu {
     display: none; /* Oculto en PC por defecto */
     cursor: pointer;
@@ -925,178 +940,107 @@ main#search-results-page-container .mensaje-vacio {
     transition: all 0.3s ease-in-out;
 }
 /* Animación de Hamburguesa a "X" */
-.hamburger-menu.active .bar:nth-child(1) {
-    transform: translateY(8px) rotate(45deg);
-}
-.hamburger-menu.active .bar:nth-child(2) {
-    opacity: 0;
-}
-.hamburger-menu.active .bar:nth-child(3) {
-    transform: translateY(-8px) rotate(-45deg);
+.hamburger-menu.active .bar:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+.hamburger-menu.active .bar:nth-child(2) { opacity: 0; }
+.hamburger-menu.active .bar:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+
+
+/* *** NUEVO: Keyframes para la animación de scroll de logos *** */
+@keyframes scrollLogos {
+  0% { transform: translateX(0%); }
+  /* Ajusta el 100% basado en el ancho total de tus logos + márgenes */
+  /* Ejemplo: si el total es 600px y la pantalla 320px, necesitas mover -280px */
+  /* Usemos un valor grande negativo; el overflow:hidden lo cortará */
+  100% { transform: translateX(-150%); } /* Ajusta este porcentaje si es necesario */
 }
 
 
-/* --- Punto de corte principal para móviles (reemplaza tu @media original) --- */
+/* --- Punto de corte principal para móviles --- */
 @media (max-width: 1024px) {
 
-    /* 1. Ajustar el header */
-    .main-nav {
-        padding: 0.5rem 1rem;
-        max-width: 100%; /* Ocupa todo el ancho */
-        margin: 0;
-    }
-    
-    .top-bar {
-        padding: 0.5rem 1rem;
-    }
+    /* 1. Ajustar el header y top-bar */
+    .main-nav { padding: 0.5rem 1rem; max-width: 100%; margin: 0; }
+    .top-bar { padding: 0; /* Sin padding lateral */ height: 50px; } /* Altura fija */
 
-    /* 2. Ocultar el menú horizontal y la búsqueda */
+    /* *** MODIFICADO: Aplicar animación a logos en móvil *** */
+    .top-bar .barra-logos-scroll {
+        /* display: flex; ya está arriba */
+        animation: scrollLogos 15s linear infinite alternate; /* 15s de duración, ida y vuelta */
+    }
+    .top-bar .barra-logos-scroll img {
+        height: 30px; /* Reducir altura de logos en móvil */
+    }
+    /* Ocultar formulario de búsqueda superior */
+    .top-bar #search-form { display: none; }
+
+
+    /* 2. Ocultar menú horizontal y nav-extra */
     .nav-links {
-        display: none; /* Oculto por defecto */
-        flex-direction: column; /* Menú vertical */
-        width: 100%;
-        position: absolute;
-        top: 66px; /* Ajustar según altura del header (logo-img 50px + padding) */
-        left: 0;
-        background-color: #fff;
-        box-shadow: 0 5px 10px rgba(0,0,0,0.1);
-        padding: 0;
-        margin: 0;
-        z-index: 999; /* Debajo del header (1000) */
-        gap: 0;
-        border-top: 1px solid #f1f1f1;
+        display: none; flex-direction: column; width: 100%;
+        position: absolute; top: 66px; /* Ajustar si altura de .main-nav cambia */
+        left: 0; background-color: #fff; box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+        padding: 0; margin: 0; z-index: 999; gap: 0; border-top: 1px solid #f1f1f1;
     }
-    #search-form {
-        display: none; /* Ocultamos la búsqueda del nav */
-    }
-    .nav-extra {
-        display: none; /* Ocultamos los botones de auth/carrito del nav */
-    }
+    .nav-extra { display: none; }
 
     /* 3. Mostrar el icono de hamburguesa */
-    .hamburger-menu {
-        display: block;
-    }
-    
-    /* 4. Estilos del menú desplegable cuando está activo */
-    .nav-links.active {
-        display: flex; /* Se muestra al hacer clic */
+    .hamburger-menu { display: block; }
+
+    /* 4. Estilos del menú desplegable activo */
+    .nav-links.active { display: flex; }
+    .nav-links li { width: 100%; text-align: left; border-bottom: 1px solid #f1f1f1;}
+    .nav-links a { padding: 1rem 1.5rem; }
+
+    /* *** NUEVO: Mostrar el buscador DENTRO del menú activo *** */
+    .nav-links.active #search-form-nav {
+        display: flex; /* Mostrar como flex */
     }
 
-    .nav-links li {
-        width: 100%;
-        text-align: left;
-        border-bottom: 1px solid #f1f1f1;
-    }
-    .nav-links a {
-        padding: 1rem 1.5rem;
-    }
+    /* 5. Sub-menús (dropdown) en línea */
+    .dropdown-content { position: static; display: block; box-shadow: none; border-top: none; min-width: auto; background-color: #f9f9f9;}
+    .dropdown-content a { padding-left: 2.5rem; color: #555; }
+    .dropdown > a { background-color: #f0f0f0; }
+    .dropdown:hover .dropdown-content { display: block; }
 
-    /* 5. Mostrar sub-menús (dropdown) en línea */
-    .dropdown-content {
-        position: static;
-        display: block;
-        box-shadow: none;
-        border-top: none;
-        min-width: auto;
-        background-color: #f9f9f9;
-    }
-    .dropdown-content a {
-        padding-left: 2.5rem; /* Indentación */
-        color: #555;
-    }
-    .dropdown > a {
-         background-color: #f0f0f0; /* Destacar el link principal */
-    }
-    .dropdown:hover .dropdown-content {
-         display: block; /* Asegurarse que siga visible */
-    }
-    
     /* 6. Ajustar el resto de la página */
-    main {
-        width: auto; /* Ancho automático */
-        margin: 1rem; /* Margen en móvil */
-        padding: 1rem; /* Padding en móvil */
-    }
+    main { width: auto; margin: 1rem; padding: 1rem; }
     main.contacto-container, main.sobre-container, main.consultora-container,
     main.carrito-main-container, main.auth-container, main.admin-container {
-        width: auto;
-        max-width: 100%;
-        padding: 1.5rem 1rem;
-        margin: 1rem;
-        box-sizing: border-box;
+        width: auto; max-width: 100%; padding: 1.5rem 1rem; margin: 1rem; box-sizing: border-box;
     }
 
     /* 7. Arreglar tarjetas de producto en móvil */
-    .tarjeta-producto {
-        flex-direction: column !important; /* Forzar columna */
-        width: 95%;
-        max-width: 350px; /* Un ancho máximo agradable */
-    }
-    .product-carousel {
-        width: 100%;
-        height: auto;
-        padding-top: 100%; /* Ratio 1:1 */
-        border-right: none;
-        border-bottom: 1px solid #eee;
-    }
-    .producto-info {
-        padding: 1rem;
-    }
+    .tarjeta-producto { flex-direction: column !important; width: 95%; max-width: 350px; }
+    .product-carousel { width: 100%; height: auto; padding-top: 100%; border-right: none; border-bottom: 1px solid #eee; }
+    .producto-info { padding: 1rem; }
 
     /* 8. Arreglar grilla de categorías */
-    #catalogo-container .tarjeta-categoria {
-        width: 90%;
-        max-width: 350px;
-    }
+    #catalogo-container .tarjeta-categoria { width: 90%; max-width: 350px; }
 
     /* 9. Arreglar formulario admin */
-    .form-row {
-        grid-template-columns: 1fr;
-    }
-    
+    .form-row { grid-template-columns: 1fr; }
+
     /* 10. Ajustar Hero Banner */
-    .hero-banner {
-        height: 250px;
-    }
-    .hero-content h2 {
-        font-size: 1.8rem;
-    }
-    .hero-content p {
-        font-size: 1rem;
-    }
+    .hero-banner { height: 250px; }
+    .hero-content h2 { font-size: 1.8rem; }
+    .hero-content p { font-size: 1rem; }
 
     /* 11. Ajustar Carrito */
-    .carrito-item {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-    }
-    .boton-eliminar {
-        margin-left: 0;
-        margin-top: 0.5rem;
-    }
+    .carrito-item { flex-direction: column; align-items: center; text-align: center; }
+    .boton-eliminar { margin-left: 0; margin-top: 0.5rem; }
 
 } /* --- FIN de @media (max-width: 1024px) --- */
 
 
 @media (max-width: 480px) {
-    .logo .logo-img {
-        max-height: 40px;
-    }
-    /* Ajustar top del menú desplegable si la altura del header cambió */
-    .nav-links {
-        top: 56px; 
-    }
-    .hero-content {
-        padding: 1.5rem 1rem;
-    }
-    .hero-content h2 {
-        font-size: 1.5rem;
-    }
-    .tarjeta-producto {
-        width: 100%; /* Ocupar todo el ancho en pantallas muy pequeñas */
-    }
+    .logo .logo-img { max-height: 40px; }
+    .nav-links { top: 56px; /* Ajustar si la altura del header cambió */ }
+    .hero-content { padding: 1.5rem 1rem; }
+    .hero-content h2 { font-size: 1.5rem; }
+    .tarjeta-producto { width: 100%; }
+    .top-bar { height: 40px; } /* Más pequeña */
+    .barra-logos-scroll img { height: 25px; margin: 0 10px;} /* Logos más pequeños */
+    .main-nav { padding: 0.5rem; } /* Menos padding */
 }
 
 /* ============================================== */

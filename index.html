@@ -4,15 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Tienda</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=1.2">
 </head>
 <body>
 
     <header>
         <div class="top-bar">
-             <a href="index.html">
-                <img src="https://res.cloudinary.com/dgrfs58n6/image/upload/v1761256896/banner_4_r8x0te.jpg" alt="Banner principal de marcas">
-             </a>
+        
+             <div class="barra-logos-scroll">
+                <img src="https://res.cloudinary.com/dgrfs58n6/image/upload/v1761491740/arbell-logo_u1u1b1.png" alt="Arbell">
+                <img src="https://res.cloudinary.com/dgrfs58n6/image/upload/v1761491740/biogreen-logo_y21k5v.png" alt="Biogreen">
+                <img src="https://res.cloudinary.com/dgrfs58n6/image/upload/v1761491741/marykay-logo_v139mc.png" alt="Mary Kay">
+                <img src="https://res.cloudinary.com/dgrfs58n6/image/upload/v1761491740/nexo-logo_vnsjdd.png" alt="Nexo">
+                <img src="https://res.cloudinary.com/dgrfs58n6/image/upload/v1761491740/arbell-logo_u1u1b1.png" alt="Arbell">
+                <img src="https://res.cloudinary.com/dgrfs58n6/image/upload/v1761491740/biogreen-logo_y21k5v.png" alt="Biogreen">
+             </div>
+             
              <form id="search-form">
                 <input type="search" id="search-input" placeholder="Buscar productos...">
                 <button type="submit" id="search-button">Buscar</button>
@@ -26,6 +33,13 @@
              </div>
 
              <ul class="nav-links">
+             
+                 <li id="search-form-nav">
+                     <form>
+                        <input type="search" id="search-input-nav" placeholder="Buscar productos...">
+                        <button type="submit" id="search-button-nav">Buscar</button>
+                     </form>
+                 </li>
                  <li class="dropdown">
                      <a href="#">HISTORIAS</a>
                      <div class="dropdown-content">
@@ -68,7 +82,7 @@
                  </div>
                  <a href="carrito.html" class="cart-link">🛒 Carrito</a>
              </div>
-             
+
              <div class="hamburger-menu">
                 <span class="bar"></span>
                 <span class="bar"></span>
@@ -104,7 +118,7 @@
             apiKey: "AIzaSyCD4lBf6BA76Oz-SDr4f8eaPA-q7v5AecY",
             authDomain: "consultoravidal91.firebaseapp.com",
             projectId: "consultoravidal91",
-            storageBucket: "consultoravidal91.appspot.com", // Consistente con versión anterior
+            storageBucket: "consultoravidal91.appspot.com",
             messagingSenderId: "840042202477",
             appId: "1:840042202477:web:aae77961b4bca465dc4664",
             measurementId: "G-HP3L0WZ60V"
@@ -132,7 +146,7 @@
           console.error("Firebase no está definido, no se puede obtener auth.");
       }
       const ADMIN_EMAIL = 'ortolanimichael@gmail.com'; // TU EMAIL
-    </script>
+    </script> 
 
     <script src="app.js" defer></script>
     <script src="auth.js" defer></script>
