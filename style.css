@@ -42,20 +42,18 @@ header {
 
 /* === REGLAS DE VISIBILIDAD PARA PC (Por defecto) === */
 
-/* 1. Ocultar el carrusel móvil en PC */
+/* 1. Ocultar el banner móvil en PC */
 #top-bar-mobile-scroll {
     display: none;
 }
 
-/* 2. Mostrar los logos de PC */
-#top-bar-desktop-logos {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem; /* Espacio entre logos */
+/* 2. Mostrar el banner estático de PC */
+#top-bar-desktop-banner {
+    display: block;
     height: 100%;
 }
-#top-bar-desktop-logos img {
-    height: 35px; /* Altura de logos de PC */
+#top-bar-desktop-banner img {
+    height: 100%;
     width: auto;
 }
 
@@ -89,7 +87,7 @@ header {
     left: 0; 
 }
 .barra-logos-scroll img {
-    height: 35px; 
+    height: 35px; /* Altura base para la imagen del banner */
     width: auto;
     margin: 0 15px; 
     flex-shrink: 0; 
@@ -995,7 +993,7 @@ main#search-results-page-container .mensaje-vacio {
 
     /* === REGLAS DE VISIBILIDAD PARA MÓVIL === */
     
-    /* 1. Mostrar y animar el carrusel móvil */
+    /* 1. Mostrar y animar el banner móvil */
     #top-bar-mobile-scroll {
         display: flex;
         animation: scrollLogos 15s linear infinite alternate; 
@@ -1013,9 +1011,6 @@ main#search-results-page-container .mensaje-vacio {
     .top-bar #search-form { 
         display: none; 
     }
-    
-    /* ... (El resto de tus reglas de @media) ... */
-
 
     /* 2. Ocultar menú horizontal y nav-extra */
     .nav-links {
