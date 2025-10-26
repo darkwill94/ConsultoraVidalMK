@@ -1232,11 +1232,12 @@ function renderProductCard(producto, productId) {
     const categoryName = producto.categoryName || '';
     const categoryImageUrl = producto.categoryImageUrl || '';
 
-    // --- Leer estado inicial del desplegable ---
-    const startVisible = producto.detailsVisibleByDefault || false;
-    const detailsInitialClass = startVisible ? 'producto-detalles detalles-visibles' : 'producto-detalles';
-    const buttonInitialText = startVisible ? 'Ocultar detalles' : 'Mostrar detalles';
-    // --- Fin estado inicial ---
+    // --- MODIFICADO: Forzar estado inicial CERRADO del desplegable ---
+    // const startVisible = producto.detailsVisibleByDefault || false; // <<< LÍNEA ORIGINAL
+    const startVisible = false; // <<< SIEMPRE EMPIEZA CERRADO
+    const detailsInitialClass = startVisible ? 'producto-detalles detalles-visibles' : 'producto-detalles'; // Ahora siempre será 'producto-detalles'
+    const buttonInitialText = startVisible ? 'Ocultar detalles' : 'Mostrar detalles'; // Ahora siempre será 'Mostrar detalles'
+    // --- FIN MODIFICADO ---
 
     let imagesHTML = '';
     imageUrls.forEach((url, index) => {
@@ -1366,14 +1367,16 @@ async function mostrarCategoriasPorMarca(marca, container) {
 async function mostrarProductosPorCategoria(marca, categoryId, categoryName, container) {
     const loadingMsg = container.querySelector('.loading-message');
     const header = document.getElementById('catalogo-header');
-    const title = container.querySelector('h2');
-    // Clear previous content (only categories, errors, empty messages)
-    container.querySelectorAll('.tarjeta-categoria, .app-error-message, .mensaje-vacio').forEach(el => el.remove());
+    const title = container.querySelector('h2'); // Get the H2 title element
+
+    // Clear previous content (only categories, products, errors, empty messages)
+    // We keep the header and title elements
+    container.querySelectorAll('.tarjeta-categoria, .tarjeta-producto, .app-error-message, .mensaje-vacio').forEach(el => el.remove());
     if (loadingMsg) { loadingMsg.textContent = 'Cargando productos...'; loadingMsg.style.display = 'block'; }
 
-    // --- MODIFICADO: Mover el título y botón Volver al PRINCIPIO del contenedor ---
-    if (title) title.textContent = categoryName; // Update title to category name
-    if (header) { // Add back button
+    // --- MODIFICADO: Update title text and ensure header has back button ---
+    if (title) title.textContent = categoryName; // Update title text
+    if (header) { // Ensure back button is present
         header.innerHTML = '<button id="catalogo-volver-btn" class="admin-button cancel-button">‹‹ Volver a Categorías</button>';
     }
     // --- FIN MODIFICADO ---
@@ -1389,8 +1392,7 @@ async function mostrarProductosPorCategoria(marca, categoryId, categoryName, con
         const productDocs = querySnapshot.docs.filter(doc => !doc.id.startsWith('--config-')); // Filter out potential config docs
 
         if (productDocs.length === 0) {
-            // Insert empty message AFTER the header/back button
-             // --- MODIFICADO: Insertar después del título ---
+            // --- MODIFICADO: Insert empty message AFTER the title ---
              title.insertAdjacentHTML('afterend', '<p class="mensaje-vacio">No hay productos disponibles en esta categoría.</p>');
             return;
         }
@@ -1401,15 +1403,21 @@ async function mostrarProductosPorCategoria(marca, categoryId, categoryName, con
              const producto = doc.data(); const productId = doc.id;
              allCardsHTML += renderProductCard(producto, productId);
         });
-        // --- MODIFICADO: Insertar después del título ---
+        // --- MODIFICADO: Insert product cards AFTER the title ---
         title.insertAdjacentHTML('afterend', allCardsHTML);
         setupCarousels(container); // Setup carousels for the newly added products
     } catch (error) {
         console.error(`Error GRAVE cargando productos por categoría ${categoryId}: `, error);
-        displayError(container, `Error al cargar productos. Revisa los ÍNDICES (link en consola F12).`);
+        // Display error AFTER the title
+        if(title) {
+            displayError(title.parentElement, `Error al cargar productos. Revisa los ÍNDICES (link en consola F12).`);
+        } else {
+             displayError(container, `Error al cargar productos. Revisa los ÍNDICES (link en consola F12).`);
+        }
         if (loadingMsg) loadingMsg.style.display = 'none';
     }
 }
+
 
 // --- Carga Plana de Productos (Cliente - para Novedades) ---
 async function cargarProductosCliente(marca, container) {
@@ -1755,7 +1763,8 @@ document.body.addEventListener('click', function(event) {
     if (event.target.classList.contains('toggle-details-btn')) {
         const button = event.target;
         // Buscar el contenedor de detalles hermano o dentro del mismo 'producto-info'
-        const detailsContainer = button.nextElementSibling; // Asume que está justo después
+        // --- MODIFICADO: Buscar el contenedor de detalles específico ---
+        const detailsContainer = button.nextElementSibling; // Asume que el div de detalles está justo después del botón
 
         if (detailsContainer && detailsContainer.classList.contains('producto-detalles')) {
             // Alternar la clase que controla la visibilidad (definida en CSS)
@@ -1768,8 +1777,9 @@ document.body.addEventListener('click', function(event) {
                 button.textContent = 'Mostrar detalles';
             }
         } else {
-            console.warn("No se encontró el contenedor de detalles para el botón:", button);
+            console.warn("No se encontró el contenedor de detalles (.producto-detalles) inmediatamente después del botón:", button);
         }
+        // --- FIN MODIFICADO ---
     }
 });
 
