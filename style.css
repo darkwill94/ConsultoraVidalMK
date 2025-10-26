@@ -1,0 +1,928 @@
+/* --- Estilos Generales --- */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f8f8; /* Fondo blanco casi puro */
+    color: #333;
+    min-height: 100vh; /* Asegura que el footer quede abajo */
+    display: flex; /* Permite que el footer se quede abajo */
+    flex-direction: column; /* Organiza los elementos verticalmente */
+}
+
+/* --- Encabezado --- */
+header {
+    background-color: #fff; /* Fondo blanco */
+    border-bottom: 1px solid #eee; /* Línea sutil al final del header */
+    width: 100%; /* Ocupa todo el ancho */
+    position: sticky; /* Fija el header */
+    top: 0; /* Lo pega arriba */
+    z-index: 1000; /* Asegura que esté por encima de otros elementos */
+}
+
+/* --- Barra Superior con Banner --- */
+.top-bar {
+    background-color: #fff;
+    padding: 0.5rem 2rem;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.top-bar a {
+    display: block;
+    width: auto;
+    line-height: 0;
+}
+
+.top-bar img {
+    width: auto;
+    height: auto;
+    display: block;
+    max-height: 60px;
+    object-fit: contain;
+}
+/* --- Fin Barra Superior --- */
+
+
+.main-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.logo h1 {
+    font-family: 'Times New Roman', serif;
+    font-size: 1.8rem;
+    color: #333;
+    margin: 0;
+}
+
+.logo .logo-img {
+    max-height: 50px;
+    width: auto;
+    display: block;
+}
+
+.nav-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 3.5rem;
+    align-items: center;
+}
+
+.nav-links li {
+    position: relative;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    padding: 0.5rem 0;
+    transition: color 0.3s ease;
+    display: block;
+}
+
+.nav-links a:hover {
+    color: #e91e63;
+}
+
+/* Contenedor para Auth y Carrito */
+.nav-extra {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: #333;
+}
+
+/* Estilo: Link del Carrito y Auth */
+.cart-link,
+.auth-link {
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+    font-size: 0.9rem;
+    padding: 8px 12px;
+    border-radius: 20px;
+    background-color: #f4f4f4;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    border: none;
+    cursor: pointer;
+    margin-left: 0.5rem;
+}
+
+.cart-link:hover,
+.auth-link:hover {
+    background-color: #e91e63;
+    color: white;
+}
+.register-link {
+     background-color: #e91e63;
+     color: white;
+}
+.register-link:hover {
+    background-color: #d81b60;
+}
+
+/* Estilos específicos para mostrar/ocultar login/logout */
+#user-logged-out {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+#user-logged-in {
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+
+#user-logged-in span {
+    margin-right: 0.5rem;
+    font-weight: normal;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+}
+#logout-button {
+    background-color: #777;
+    color: white;
+    padding: 6px 10px;
+    font-size: 0.8rem;
+}
+#logout-button:hover {
+    background-color: #555;
+}
+
+
+/* --- Estilos para el Banner Héroe / Carrusel --- */
+.hero-banner {
+    width: 100%;
+    height: 400px;
+    position: relative;
+    overflow: hidden;
+    background-color: #eee;
+    background-image: url('https://picsum.photos/id/1015/1200/500');
+    background-size: cover;
+    background-position: center center;
+}
+
+.hero-carousel-slides {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.hero-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center center;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+    z-index: 1;
+}
+
+.hero-slide.active {
+    opacity: 1;
+    z-index: 2;
+}
+
+.hero-content {
+    color: white;
+    text-align: center;
+    padding: 2rem;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 3;
+    max-width: 90%;
+    width: fit-content;
+}
+
+.hero-content h2 { font-size: 2.5rem; font-weight: bold; margin: 0 0 0.5rem 0; }
+.hero-content p { font-size: 1.2rem; margin: 0 0 1.5rem 0; }
+.hero-boton { background-color: #e91e63; color: white; padding: 12px 25px; text-decoration: none; border-radius: 30px; font-weight: bold; transition: background-color 0.3s ease; display: inline-block; }
+.hero-boton:hover { background-color: #d81b60; }
+
+
+/* --- Contenedor Principal --- */
+main {
+    max-width: 1200px;
+    width: 90%;
+    margin: 2rem auto;
+    padding: 1.5rem;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    flex-grow: 1;
+}
+
+main.contacto-container,
+main.sobre-container,
+main.consultora-container,
+main.carrito-main-container,
+main.auth-container,
+main.admin-container {
+    max-width: 900px;
+    margin: 3rem auto;
+    padding: 2.5rem;
+}
+
+/* Estilos del Catálogo de Productos (Lista - Usado por Novedades) */
+#productos-container {
+    padding: 1rem 0;
+    max-width: 800px;
+    margin: 2rem auto;
+}
+#productos-container h2 {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 2rem;
+}
+#productos-container .loading-message,
+#productos-container .error-message,
+#productos-container .mensaje-vacio {
+    text-align: center;
+    color: #777;
+    font-style: italic;
+    padding: 1.5rem;
+    font-size: 1.1rem;
+}
+#productos-container .error-message {
+    color: red;
+    font-style: normal;
+    font-weight: bold;
+}
+
+/* ============================================== */
+/* === ESTILOS REFORZADOS v2 PARA TARJETA PRODUCTO === */
+/* ============================================== */
+
+/* Contenedor principal de la tarjeta */
+.tarjeta-producto {
+    background-color: #fefefe;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: row !important; /* Forzar fila */
+    align-items: flex-start; /* Alinear items al inicio (arriba) */
+    width: 95%;
+    max-width: 700px;
+    margin: 1.5rem auto;
+    overflow: hidden;
+}
+.tarjeta-producto:hover {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* Contenedor de la imagen/carrusel (Izquierda) */
+.product-carousel {
+    position: relative;
+    width: 180px; /* Ancho fijo */
+    height: 180px; /* Alto fijo (cuadrado) */
+    flex-shrink: 0; /* No permitir que se encoja */
+    background-color: #f0f0f0;
+    border-right: 1px solid #eee; /* Separador */
+    overflow: hidden; /* Asegurar que las imágenes no se salgan */
+}
+
+/* Imágenes dentro del carrusel */
+.carousel-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+    display: block; /* Asegurar bloque */
+}
+.carousel-image.active {
+    opacity: 1;
+}
+
+/* Botones del carrusel */
+.carousel-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    font-size: 1.5rem;
+    padding: 0.3rem 0.8rem;
+    cursor: pointer;
+    border-radius: 50%;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    line-height: 1;
+    display: none; /* JS lo mostrará si hay >1 imagen */
+}
+.product-carousel:hover .carousel-button { opacity: 0.7; }
+.carousel-button:hover { opacity: 1; }
+.carousel-button.prev { left: 10px; }
+.carousel-button.next { right: 10px; }
+
+/* Contenedor de la información (Derecha) */
+.producto-info {
+    padding: 1rem 1.5rem;
+    display: flex;
+    flex-direction: column; /* Contenido interno en columna */
+    flex-grow: 1; /* Ocupa el espacio restante */
+    flex-shrink: 1; /* Puede encogerse si es necesario */
+    min-width: 0; /* Importante para evitar desbordamiento con flexbox */
+    justify-content: flex-start; /* Alinea contenido arriba */
+}
+
+/* Estilos internos de .producto-info (sin cambios importantes) */
+.producto-categoria-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.3rem;}
+.producto-categoria-imagen { width: 24px; height: 24px; object-fit: contain; border-radius: 50%; }
+.producto-categoria { font-size: 0.8rem; color: #888; text-transform: uppercase; font-weight: bold; margin: 0; }
+.tarjeta-producto h3 { text-align: left; margin: 0 0 0.5rem 0; font-size: 1.25rem; color: #333; word-wrap: break-word; } /* Added word-wrap */
+.tarjeta-producto p.producto-precio { text-align: left; margin: 0 0 1rem 0; font-size: 1.1rem; font-weight: bold; color: #e91e63; }
+.producto-descripcion { font-size: 0.9rem; color: #666; line-height: 1.5; margin-bottom: 1rem; white-space: pre-wrap; word-wrap: break-word; } /* Added word-wrap */
+
+.producto-acciones {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: auto; /* Empuja esto al final del contenedor .producto-info */
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+.producto-acciones label { font-size: 0.9rem; color: #555; font-weight: bold; white-space: nowrap; }
+.producto-cantidad { width: 60px; padding: 8px; font-size: 1rem; text-align: center; border: 1px solid #ddd; border-radius: 5px; }
+.boton-agregar {
+    margin: 0;
+    flex-grow: 1;
+    background-color: #f7a8b8;
+    color: #333;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: bold;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, color 0.3s ease, transform 0.1s ease;
+    text-transform: uppercase;
+}
+.boton-agregar:hover { background-color: #e91e63; color: white; }
+.boton-agregar:active { transform: scale(0.98); }
+
+/* --- ASEGÚRATE DE BORRAR O COMENTAR CUALQUIER MEDIA QUERY @media que afecte a .tarjeta-producto o sus hijos y los ponga en columna --- */
+/* Example commented out:
+@media (max-width: 480px) {
+    .tarjeta-producto {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .product-carousel {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 4 / 3;
+        border-right: none;
+        border-bottom: 1px solid #eee;
+    }
+    .producto-info {
+        padding: 1rem;
+    }
+}
+*/
+/* ============================================== */
+/* === FIN ESTILOS REFORZADOS v2              === */
+/* ============================================== */
+
+
+/* --- Pie de página --- */
+footer {
+    text-align: center;
+    padding: 1.5rem;
+    background-color: #f0f0f0;
+    border-top: 1px solid #eee;
+    margin-top: auto;
+    width: 100%;
+    box-sizing: border-box;
+}
+footer p { margin: 0; font-size: 0.9rem; color: #555;}
+
+/* Botones especiales del carrito */
+#finalizar-compra, #vaciar-carrito {
+    background-color: #e91e63;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    margin: 0.5rem;
+}
+#finalizar-compra:hover { background-color: #d81b60; transform: translateY(-2px); }
+#vaciar-carrito { background-color: #777; }
+#vaciar-carrito:hover { background-color: #555; transform: translateY(-2px); }
+
+
+/* --- Estilos para la Página de Contacto --- */
+.contacto-container h2 { text-align: center; font-size: 2.5rem; color: #333; margin-bottom: 1rem; }
+.contacto-container p { text-align: center; font-size: 1.1rem; margin-bottom: 2.5rem; color: #555; }
+.contact-form { display: flex; flex-direction: column; gap: 1.2rem; }
+.contact-form label { font-weight: bold; font-size: 0.9rem; color: #555; margin-bottom: -0.5rem; }
+.contact-form input, .contact-form textarea { width: 100%; padding: 12px; font-size: 1rem; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+.contact-form textarea { resize: vertical; min-height: 100px; }
+.boton-enviar { background-color: #e91e63; color: white; border: none; padding: 15px 30px; font-size: 1.1rem; font-weight: bold; border-radius: 30px; cursor: pointer; transition: background-color 0.3s ease; width: fit-content; align-self: center; margin-top: 1rem; }
+.boton-enviar:hover { background-color: #d81b60; }
+
+/* --- Estilos para la Página "Sobre Mary Kay" y otras páginas "Sobre" --- */
+.sobre-container .subtitulo { text-align: center; font-size: 1.2rem; color: #555; margin-bottom: 2.5rem; font-style: italic; }
+.sobre-container img { width: 100%; height: auto; border-radius: 8px; margin-bottom: 2.5rem; max-height: 400px; object-fit: cover;}
+.sobre-container h3 { font-size: 1.8rem; color: #e91e63; margin-top: 2rem; margin-bottom: 1rem; border-bottom: 2px solid #f0f0f0; padding-bottom: 0.5rem; }
+.sobre-container p { font-size: 1rem; line-height: 1.6; color: #444; margin-bottom: 1rem; }
+
+/* --- Estilos para la Página "Quiero ser Consultora" y otras "Emprende" --- */
+.consultora-container h2 { text-align: center; font-size: 2.5rem; color: #333; margin-bottom: 1rem; }
+.consultora-container .subtitulo { text-align: center; font-size: 1.2rem; color: #555; margin-bottom: 2.5rem; font-style: italic; }
+.consultora-container img { width: 100%; height: auto; border-radius: 8px; margin-bottom: 2.5rem; max-height: 400px; object-fit: cover; }
+.consultora-container h3 { font-size: 1.8rem; color: #e91e63; margin-top: 2rem; margin-bottom: 1rem; border-bottom: 2px solid #f0f0f0; padding-bottom: 0.5rem; }
+.consultora-container p { font-size: 1rem; line-height: 1.6; color: #444; margin-bottom: 1rem;}
+.beneficios-lista { list-style-type: none; padding-left: 0; margin: 1.5rem 0; }
+.beneficios-lista li { font-size: 1rem; color: #333; padding-left: 2rem; margin-bottom: 0.75rem; position: relative; }
+.beneficios-lista li::before { content: '✔'; color: #e91e63; position: absolute; left: 0; top: 0; font-size: 1.2rem; }
+.boton-consultora { background-color: #e91e63; color: white; border: none; padding: 15px 30px; font-size: 1.1rem; font-weight: bold; border-radius: 30px; cursor: pointer; transition: background-color 0.3s ease; text-decoration: none; display: table; margin: 2rem auto 0 auto; }
+.boton-consultora:hover { background-color: #d81b60; }
+
+
+/* --- Estilos para la Página del Carrito --- */
+.carrito-main-container h2 { text-align: center; font-size: 2.5rem; color: #333; margin-bottom: 2rem; }
+.carrito-vacio { text-align: center; font-size: 1.2rem; color: #777; padding: 2rem; }
+.carrito-item { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid #eee; padding: 1rem 0; }
+.carrito-item img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; flex-shrink: 0; }
+.carrito-item-info { flex-grow: 1; }
+.carrito-item-info h4 { margin: 0 0 0.3rem 0; font-size: 1.1rem; color: #333; }
+.carrito-item-info p { margin: 0.2rem 0; font-size: 0.95rem; color: #555; }
+.boton-eliminar { background-color: #dc3545; color: white; border: none; padding: 6px 10px; font-size: 0.85rem; font-weight: bold; border-radius: 5px; cursor: pointer; transition: background-color 0.3s ease; margin-left: auto; }
+.boton-eliminar:hover { background-color: #c82333; }
+.carrito-total { text-align: right; font-size: 1.5rem; color: #333; margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid #333; }
+
+/* --- Estilos para el Menú Desplegable (Dropdown) --- */
+.dropdown-content { display: none; position: absolute; background-color: #ffffff; min-width: 220px; box-shadow: 0 8px 16px 0 rgba(0,0,0,0.1); z-index: 100; border-top: 3px solid #e91e63; left: 0; }
+.dropdown-content a { color: #333; padding: 12px 16px; text-decoration: none; display: block; font-weight: normal; font-size: 0.9rem; text-transform: none; }
+.dropdown-content a:hover { background-color: #f4f4f4; color: #e91e63; }
+.dropdown:hover .dropdown-content { display: block; }
+.dropdown:hover > a { color: #e91e63; }
+
+/* --- Estilos para Formularios de Auth --- */
+.auth-container h2 { text-align: center; font-size: 2rem; color: #333; margin-bottom: 2rem; }
+.auth-form { display: flex; flex-direction: column; gap: 1.2rem; }
+.auth-form label { font-weight: bold; font-size: 0.9rem; color: #555; margin-bottom: -0.5rem; }
+.auth-form input { width: 100%; padding: 12px; font-size: 1rem; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+.auth-button { background-color: #e91e63; color: white; border: none; padding: 15px; font-size: 1.1rem; font-weight: bold; border-radius: 5px; cursor: pointer; transition: background-color 0.3s ease; margin-top: 1rem; }
+.auth-button:hover { background-color: #d81b60; }
+.error-message { color: #dc3545; text-align: center; margin-top: 1rem; font-weight: bold; font-size: 0.9rem; }
+.auth-switch { text-align: center; margin-top: 1.5rem; font-size: 0.9rem; }
+.auth-switch a { color: #e91e63; text-decoration: none; font-weight: bold; }
+.auth-switch a:hover { text-decoration: underline; }
+
+/* --- Estilos para la Página de Admin --- */
+.admin-container h2 { text-align: center; font-size: 2.5rem; color: #333; margin-bottom: 2rem; }
+.admin-container h3 { font-size: 1.8rem; color: #e91e63; margin-top: 2.5rem; margin-bottom: 1rem; border-bottom: 2px solid #f0f0f0; padding-bottom: 0.5rem; }
+.admin-container h4 { font-size: 1.3rem; color: #555; margin-top: 1.5rem; margin-bottom: 0.8rem; }
+
+
+/* Estilos para el formulario de admin */
+.admin-form { background-color: #f9f9f9; padding: 1.5rem; border: 1px solid #eee; border-radius: 8px; margin-bottom: 2rem; }
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; margin-bottom: 0.5rem; font-weight: bold; font-size: 0.9rem; color: #555; }
+.admin-form input[type="text"],
+.admin-form input[type="number"],
+.admin-form input[type="url"],
+.admin-form input[type="checkbox"], /* Added checkbox */
+.admin-form select,
+.admin-form textarea {
+    width: 100%; padding: 10px; font-size: 1rem; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;
+}
+/* Style checkbox differently */
+.admin-form input[type="checkbox"] {
+    width: auto; /* Checkbox width should be auto */
+    margin-right: 5px; /* Space before label */
+    vertical-align: middle; /* Align with label text */
+}
+.admin-form select:disabled { background-color: #e9ecef; cursor: not-allowed;}
+
+.admin-form textarea { min-height: 80px; resize: vertical; font-family: sans-serif;}
+.admin-form textarea#product-image-urls,
+.admin-form textarea#hero-image-urls {
+    font-family: monospace;
+    white-space: pre;
+    line-height: 1.4;
+}
+.admin-form small { font-size: 0.8rem; color: #666; display: block; margin-top: 0.3rem;}
+
+/* Estilo para alinear Marca y Categoría */
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+/* Estilos de botones Admin (unificados) */
+.admin-button {
+     border: none;
+     padding: 10px 15px;
+     font-size: 0.9rem;
+     font-weight: bold;
+     border-radius: 5px;
+     cursor: pointer;
+     transition: background-color 0.3s ease;
+     margin-top: 1rem;
+     margin-right: 0.5rem;
+     color: white;
+}
+.admin-button.add-button { background-color: #28a745; }
+.admin-button.add-button:hover { background-color: #218838; }
+.admin-button.edit-button { background-color: #007bff; }
+.admin-button.edit-button:hover { background-color: #0056b3; }
+.admin-button.cancel-button { background-color: #6c757d; }
+.admin-button.cancel-button:hover { background-color: #5a6268; }
+
+#products-table td button,
+#categories-table td button {
+     padding: 5px 8px;
+     font-size: 0.8rem;
+     margin-bottom: 3px;
+     margin-right: 3px;
+}
+
+
+.feedback-message { margin-top: 1rem; font-weight: bold; font-size: 0.9rem; text-align: center; padding: 0.5rem; border-radius: 4px; }
+.feedback-message.success { color: #155724; background-color: #d4edda; border: 1px solid #c3e6cb;}
+.feedback-message.error { color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb;}
+
+/* Estilos para las tablas de admin (Productos y Categorías) */
+#list-products-container,
+#list-categories-container { margin-top: 3rem; }
+
+.table-container {
+    overflow-x: auto;
+    max-width: 100%;
+}
+
+#products-table,
+#categories-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    table-layout: auto;
+    min-width: 600px;
+}
+
+#products-table th, #products-table td,
+#categories-table th, #categories-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+    vertical-align: middle;
+    word-wrap: break-word;
+}
+
+#products-table th,
+#categories-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+#products-table img,
+.admin-table-thumbnail {
+    max-width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 4px;
+    display: block;
+    margin: auto;
+}
+
+
+#products-table td,
+#categories-table td { font-size: 0.85rem; }
+
+/* Anchos Sugeridos (Productos) */
+#products-table th:nth-child(1), #products-table td:nth-child(1) { width: 60px; text-align: center; } /* Imagen */
+#products-table th:nth-child(7), #products-table td:nth-child(7) { width: 130px; text-align: center; white-space: nowrap;} /* Acciones */
+/* Anchos Sugeridos (Categorías) */
+#categories-table th:nth-child(1), #categories-table td:nth-child(1) { width: 60px; text-align: center; } /* Imagen */
+#categories-table th:nth-child(4), #categories-table td:nth-child(4) { width: 130px; text-align: center; white-space: nowrap;} /* Acciones */
+
+
+#loading-products-admin,
+#loading-categories-admin { text-align: center; color: #777; font-style: italic; padding: 1rem; }
+
+
+/* --- Estilos del Buscador (Header) --- */
+#search-form {
+    display: flex;
+    gap: 0.5rem;
+    max-width: 400px;
+    margin: 0;
+    flex-grow: 1;
+    margin-left: 2rem;
+}
+
+#search-input {
+    flex-grow: 1;
+    padding: 10px 15px;
+    font-size: 0.9rem;
+    border: 1px solid #ddd;
+    border-radius: 30px;
+}
+
+#search-button {
+    background-color: #e91e63;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+#search-button:hover {
+    background-color: #d81b60;
+}
+
+/* Contenedor de resultados (página de búsqueda) */
+#search-results-list {
+    margin-top: 2rem;
+    text-align: left;
+}
+#search-results-title {
+    font-size: 1.8rem;
+    color: #333;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+/* Estilos para el main de la página de búsqueda */
+main#search-results-page-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 1.5rem;
+}
+main#search-results-page-container .loading-message,
+main#search-results-page-container .mensaje-vacio {
+    text-align: center;
+    color: #777;
+    font-style: italic;
+    padding: 1.5rem;
+    font-size: 1.1rem;
+}
+/* --- Fin Estilos Buscador --- */
+
+/* ============================================== */
+/* === ESTILOS PARA CATÁLOGO POR CATEGORÍAS === */
+/* ============================================== */
+
+/* Contenedor principal del catálogo */
+#catalogo-container {
+    padding: 2rem 1rem;
+    max-width: 1200px;
+    margin: 1rem auto;
+    text-align: center;
+}
+
+/* Estilos para la grilla de TARJETAS DE CATEGORÍA */
+#catalogo-container .tarjeta-categoria {
+    display: inline-block;
+    width: 280px;
+    margin: 1rem;
+    padding-bottom: 1rem;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    vertical-align: top;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+}
+
+#catalogo-container .tarjeta-categoria:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+
+#catalogo-container .tarjeta-categoria img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    /* border-bottom set per brand */
+}
+
+#catalogo-container .tarjeta-categoria h3 {
+    font-size: 1.25rem;
+    color: #333;
+    margin-top: 1rem;
+    padding: 0 0.5rem;
+}
+
+/* Contenedor para el botón "Volver" */
+#catalogo-header {
+    text-align: left;
+    margin-bottom: 1rem;
+}
+
+/* Estilo del botón "Volver" */
+#catalogo-volver-btn {
+    font-size: 0.9rem;
+    padding: 0.6rem 1rem;
+    /* Inherits colors from .admin-button.cancel-button */
+}
+
+/* Ajuste para que la grilla de productos funcione bien */
+#catalogo-container .tarjeta-producto {
+    /* display: inline-block; NO - Use default flex layout */
+    /* vertical-align: top; NO */
+    text-align: left; /* Reset text align */
+    margin: 1.5rem auto; /* Center cards */
+}
+
+@media (max-width: 640px) {
+    #catalogo-container .tarjeta-categoria {
+        width: 90%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+     #catalogo-container .tarjeta-producto {
+        width: 90%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+/* ============================================== */
+/* === ESTILOS ESPECÍFICOS PARA MARCAS        === */
+/* ============================================== */
+
+/* Mary Kay */
+.catalogo-marykay .tarjeta-categoria img { border-bottom: 3px solid #e91e63; }
+.catalogo-marykay h2 { color: #e91e63; }
+
+/* Biogreen */
+.catalogo-biogreen .tarjeta-categoria img { border-bottom: 3px solid #28a745; }
+.catalogo-biogreen h2 { color: #28a745; }
+
+/* Arbell */
+.catalogo-arbell .tarjeta-categoria img { border-bottom: 3px solid #007bff; }
+.catalogo-arbell h2 { color: #007bff; }
+
+/* Nexo */
+.catalogo-nexo .tarjeta-categoria img { border-bottom: 3px solid #333; }
+.catalogo-nexo h2 { color: #333; }
+
+/* ============================================== */
+/* === ESTILOS PARA BANNER INTERMEDIO         === */
+/* ============================================== */
+
+.banner-intermedio {
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    line-height: 0;
+    margin-bottom: 1rem;
+    display: none;
+}
+
+.banner-intermedio img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* ============================================== */
+/* === ESTILOS PARA CARRUSEL OPORTUNIDAD MK   === */
+/* ============================================== */
+
+.oportunidad-mk-banner {
+    width: 100%;
+    height: 350px;
+    position: relative;
+    overflow: hidden;
+    background-color: #eee;
+    margin-bottom: 2.5rem;
+    border-radius: 8px;
+}
+
+.oportunidad-mk-slides {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.oportunidad-mk-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center center;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+    z-index: 1;
+}
+
+.oportunidad-mk-slide.active {
+    opacity: 1;
+    z-index: 2;
+}
+
+/* ============================================== */
+/* === ESTILOS PARA DETALLES DESPLEGABLES     === */
+/* ============================================== */
+
+/* Botón para mostrar/ocultar */
+.toggle-details-btn {
+    background-color: #f0f0f0; /* Color de fondo suave */
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: #555;
+    cursor: pointer;
+    margin-top: 0.5rem; /* Espacio después de la descripción principal (si existe) */
+    margin-bottom: 0.5rem; /* Espacio antes de los detalles (cuando se muestran) */
+    transition: background-color 0.2s ease;
+    text-align: left; /* Alinear texto a la izquierda */
+    width: auto; /* Ancho automático */
+    display: inline-block; /* Permitir que esté en línea si es necesario */
+}
+
+.toggle-details-btn:hover {
+    background-color: #e0e0e0;
+}
+
+/* Contenedor de los detalles */
+.producto-detalles {
+    display: none; /* Oculto por defecto */
+    padding-top: 0.8rem; /* Espacio interior superior */
+    margin-top: 0.5rem; /* Espacio sobre el contenido */
+    border-top: 1px dashed #eee; /* Línea separadora sutil */
+}
+
+/* Clase para mostrar los detalles */
+.producto-detalles.detalles-visibles {
+    display: block; /* Mostrar el contenido */
+}
+
+/* Párrafo dentro de los detalles */
+.producto-descripcion-detalles {
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/* Ajuste opcional para la descripción principal */
+.producto-descripcion-main {
+     font-size: 0.9rem;
+     color: #666;
+     line-height: 1.5;
+     margin-bottom: 0.5rem;
+     white-space: pre-wrap;
+     word-wrap: break-word;
+}

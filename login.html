@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - Mi Tienda</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+         <div class="top-bar">
+            <a href="index.html">
+                <img src="https://res.cloudinary.com/dgrfs58n6/image/upload/v1761256896/banner_4_r8x0te.jpg" alt="Banner principal de marcas">
+            </a>
+        </div>
+         <nav class="main-nav">
+             <div class="logo"><a href="index.html" style="text-decoration: none; color: inherit;"><h1>MARY KAY</h1></a></div>
+             <ul class="nav-links">
+                 <li><a href="sobre-mary-kay.html">SOBRE MARY KAY</a></li>
+                 <li class="dropdown"><a href="#">PRODUCTOS</a><div class="dropdown-content"><a href="productos-marykay.html">Mary Kay</a><a href="productos-biogreen.html">Biogreen</a><a href="productos-arbell.html">Arbell</a><a href="productos-nexo.html">Nexo (Indumentaria)</a></div></li>
+                 <li><a href="quiero-ser-consultora.html">QUIERO SER CONSULTORA</a></li>
+                 <li><a href="contacto.html">CONTÁCTANOS</a></li>
+                 <!-- Enlace Admin (visible solo para admin via auth.js) -->
+                 <li id="admin-link-li" style="display: none;"><a href="admin.html">ADMIN</a></li>
+             </ul>
+             <div class="nav-extra">
+                 <!-- Contenedores para estado de login (manejados por auth.js) -->
+                 <div id="user-logged-out"><a href="login.html" class="auth-link">Iniciar Sesión</a><a href="registro.html" class="auth-link register-link">Registrarse</a></div>
+                 <div id="user-logged-in" style="display: none;"><span id="user-email"></span><button id="logout-button" class="auth-link">Cerrar Sesión</button></div>
+                 <a href="carrito.html" class="cart-link">🛒 Carrito</a>
+             </div>
+         </nav>
+    </header>
+
+    <main class="auth-container">
+        <h2>Iniciar Sesión</h2>
+        <form id="login-form" class="auth-form">
+            <label for="login-email">Email:</label>
+            <input type="email" id="login-email" required>
+            
+            <label for="login-password">Contraseña:</label>
+            <input type="password" id="login-password" required>
+            
+            <button type="submit" class="auth-button">Iniciar Sesión</button>
+            <p id="login-error" class="error-message" style="display: none;"></p>
+        </form>
+        <p class="auth-switch">¿No tienes cuenta? <a href="registro.html">Regístrate aquí</a></p>
+    </main>
+
+    <footer>
+        <p>© 2025 Mi Tienda Mary Kay. Todos los derechos reservados.</p>
+    </footer>
+    
+    <!-- === BLOQUE DE SCRIPTS === -->
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script> <!-- Necesario aunque no se use directamente aquí -->
+
+    <script>
+      // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyCD4lBf6BA76Oz-SDr4f8eaPA-q7v5AecY",
+  authDomain: "consultoravidal91.firebaseapp.com",
+  projectId: "consultoravidal91",
+  storageBucket: "consultoravidal91.firebasestorage.app",
+  messagingSenderId: "840042202477",
+  appId: "1:840042202477:web:aae77961b4bca465dc4664",
+  measurementId: "G-HP3L0WZ60V"
+};
+  
+      // Inicializar Firebase (evitando reinicializar)
+      if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+         firebase.initializeApp(firebaseConfig);
+      }
+      const auth = firebase.auth(); // Objeto Auth
+      const db = firebase.firestore(); // Objeto Firestore DB (aunque no se use aquí, se define)
+  
+      // Variable global para identificar al admin (usada por auth.js)
+      // Asegúrate que este email coincide con el de las reglas de Firestore y el que usas para loguearte como admin
+      const ADMIN_EMAIL = 'ortolanimichael@gmail.com'; // 👈 ¡REEMPLAZA ESTO CON TU EMAIL REAL!
+    </script>
+    
+    <!-- Tus scripts personalizados -->
+    <script src="app.js" defer></script> <!-- Necesario para actualizarContadorCarrito() -->
+    <script src="auth.js" defer></script> <!-- Necesario para el formulario de login -->
+    <!-- ======================== -->
+    
+</body>
+</html>
+
