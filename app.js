@@ -67,7 +67,7 @@ function initializePageLogic() {
 
     // El buscador ahora está en el header, así que se inicializa en CADA página
     setupSearchForm();
-    
+
     // +++ AÑADIDO: Inicializar el menú hamburguesa en CADA página +++
     setupHamburgerMenu();
     // +++ FIN AÑADIDO +++
@@ -1655,7 +1655,8 @@ function handleFinalizarCompra() {
     });
     mensaje += `\n*TOTAL DEL PEDIDO: $${total.toFixed(2)}*`;
 
-    const numeroWhatsApp = "5493571618367"; // Replace with your WhatsApp number
+    // *** MODIFICACIÓN: Número de WhatsApp Actualizado ***
+    const numeroWhatsApp = "5493571618367"; // <-- NÚMERO ACTUALIZADO AQUÍ
     const mensajeCodificado = encodeURIComponent(mensaje);
     const urlWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${mensajeCodificado}`;
     window.open(urlWhatsApp, '_blank'); // Open WhatsApp link in new tab
@@ -1691,25 +1692,58 @@ function actualizarContadorCarrito() {
 
 // --- Lógica de Búsqueda ---
 function setupSearchForm() {
-    const searchForm = document.getElementById('search-form');
-    const searchInput = document.getElementById('search-input');
-    if (!searchForm || !searchInput) { console.warn("Elementos del formulario de búsqueda no encontrados en el header."); return; }
+    // Get both search forms (desktop in top-bar, mobile in nav-links)
+    const searchFormDesktop = document.getElementById('search-form');
+    const searchInputDesktop = document.getElementById('search-input');
+    const searchFormMobileLi = document.getElementById('search-form-nav'); // The <li> container
+    const searchFormMobile = searchFormMobileLi?.querySelector('form'); // The <form> inside
+    const searchInputMobile = document.getElementById('search-input-nav');
 
-    // If on search page, pre-fill input with query parameter
+    // Pre-fill input if on search page
     if (window.location.pathname.includes('busqueda')) {
         const params = new URLSearchParams(window.location.search);
         const query = params.get('q');
-        if (query) { searchInput.value = decodeURIComponent(query); }
+        if (query) {
+            const decodedQuery = decodeURIComponent(query);
+            if(searchInputDesktop) searchInputDesktop.value = decodedQuery;
+            if(searchInputMobile) searchInputMobile.value = decodedQuery;
+        }
     }
 
-    // Handle form submission
-    searchForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const searchTerm = searchInput.value.trim();
-        // Redirect to search page with query parameter
-        if (searchTerm) { window.location.href = `busqueda?q=${encodeURIComponent(searchTerm)}`; }
-    });
+    // Function to handle redirection
+    const handleSearchSubmit = (searchTerm) => {
+        if (searchTerm) {
+            window.location.href = `busqueda.html?q=${encodeURIComponent(searchTerm)}`; // Ensure .html is included if needed
+        }
+    };
+
+    // Add listener to desktop form
+    if (searchFormDesktop && searchInputDesktop) {
+        searchFormDesktop.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const searchTerm = searchInputDesktop.value.trim();
+            handleSearchSubmit(searchTerm);
+        });
+    } else {
+        console.warn("Desktop search form elements not found.");
+    }
+
+    // Add listener to mobile form
+    if (searchFormMobile && searchInputMobile) {
+        searchFormMobile.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const searchTerm = searchInputMobile.value.trim();
+            handleSearchSubmit(searchTerm);
+        });
+    } else {
+         // Don't warn on login/register pages as they have different headers
+         const pathname = window.location.pathname;
+         if (!pathname.includes('login') && !pathname.includes('registro')) {
+             console.warn("Mobile search form elements not found inside .nav-links.");
+         }
+    }
 }
+
 async function executeSearchPageQuery() {
     const resultsContainer = document.getElementById('search-results-list');
     const titleElement = document.getElementById('search-results-title');
