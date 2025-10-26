@@ -1048,6 +1048,34 @@ main#search-results-page-container .mensaje-vacio {
     .nav-links.active #search-form-nav {
         display: flex; /* Mostrar como flex */
     }
+    
+    /* *** NUEVO: Estilos opcionales para botones Auth en móvil *** */
+    .auth-mobile-link a, .auth-mobile-link button {
+        display: block;
+        text-align: center;
+        background-color: #f4f4f4;
+        margin: 0.5rem 1.5rem; /* Margen similar al padding de los otros links */
+        padding: 0.8rem;
+        border-radius: 20px;
+        color: #333;
+        font-weight: bold;
+        border: none; /* Para el botón */
+        cursor: pointer; /* Para el botón */
+        width: auto; /* Ajustar ancho */
+        text-decoration: none; /* Asegurar que no haya subrayado */
+        text-transform: none; /* Quitar mayúsculas si las heredó */
+        font-size: 0.9rem; /* Tamaño similar a otros links */
+    }
+    .register-link-mobile a {
+        background-color: #e91e63;
+        color: white;
+    }
+    #logout-button-mobile {
+         background-color: #777;
+         color: white;
+         width: calc(100% - 3rem); /* Ocupar ancho menos márgenes */
+    }
+    /* *** FIN: Estilos opcionales Auth móvil *** */
 
     /* 5. Sub-menús (dropdown) en línea */
     .dropdown-content { position: static; display: block; box-shadow: none; border-top: none; min-width: auto; background-color: #f9f9f9;}
@@ -1088,6 +1116,8 @@ main#search-results-page-container .mensaje-vacio {
 @media (max-width: 480px) {
     .logo .logo-img { max-height: 40px; }
     .nav-links { top: 56px; /* Ajustar si la altura del header cambió */ }
+     /* Ajustar altura del menú si el header es más pequeño */
+    .nav-links.active { max-height: calc(100vh - 56px) !important; }
     .hero-content { padding: 1.5rem 1rem; }
     .hero-content h2 { font-size: 1.5rem; }
     .tarjeta-producto { width: 100%; }
