@@ -4,29 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Tienda</title>
-    <link rel="stylesheet" href="style.css?v=1.8">
+    <link rel="stylesheet" href="style.css?v=1.11">
 </head>
 <body>
 
     <header>
         <div class="top-bar">
-        
              <a href="index.html" id="top-bar-desktop-banner">
                 <img src="https://res.cloudinary.com/dgrfs58n6/image/upload/v1761256896/banner_4_r8x0te.jpg" alt="Banner principal de marcas">
              </a>
-
              <div id="top-bar-mobile-scroll" class="barra-logos-scroll">
                 <img src="https://res.cloudinary.com/dgrfs58n6/image/upload/v1761256896/banner_4_r8x0te.jpg" alt="Marcas">
                 <img src="https://res.cloudinary.com/dgrfs58n6/image/upload/v1761256896/banner_4_r8x0te.jpg" alt="Marcas">
              </div>
-             
              <form id="search-form">
                 <input type="search" id="search-input" placeholder="Buscar productos...">
                 <button type="submit" id="search-button">Buscar</button>
              </form>
-             
         </div>
-        
+
         <nav class="main-nav">
              <div class="logo">
                  <a href="index.html">
@@ -34,15 +30,14 @@
                  </a>
              </div>
 
+             <span id="user-email-mobile" style="display: none;"></span>
              <ul class="nav-links">
-                 
                  <li id="search-form-nav">
                      <form>
                         <input type="search" id="search-input-nav" placeholder="Buscar productos...">
                         <button type="submit" id="search-button-nav">Buscar</button>
                      </form>
                  </li>
-                 
                  <li class="dropdown">
                      <a href="#">HISTORIAS</a>
                      <div class="dropdown-content">
@@ -72,12 +67,11 @@
                  </li>
                  <li><a href="oportunidad-mk.html">OPORTUNIDAD MK</a></li>
                  <li><a href="contacto.html">CONTÁCTANOS</a></li>
-                 
                  <li id="user-logged-out-mobile" class="auth-mobile-link"><a href="login.html">Iniciar Sesión</a></li>
                  <li id="user-logged-out-mobile-register" class="auth-mobile-link register-link-mobile"><a href="registro.html">Registrarse</a></li>
                  <li id="user-logged-in-mobile" class="auth-mobile-link" style="display: none;"><button id="logout-button-mobile">Cerrar Sesión</button></li>
-                 </ul>
-             
+             </ul>
+
              <div class="nav-extra">
                  <div id="user-logged-out" style="display: flex;">
                      <a href="login.html" class="auth-link">Iniciar Sesión</a>
@@ -90,7 +84,7 @@
                  </div>
                  </div>
 
-             <a href="carrito.html" class="cart-link" style="margin-left: auto; margin-right: 0.5rem;">🛒 Carrito</a>
+             <a href="carrito.html" class="cart-link" style="margin-right: 0.5rem;">🛒 Carrito</a>
 
              <div class="hamburger-menu">
                 <span class="bar"></span>
@@ -155,7 +149,7 @@
           console.error("Firebase no está definido, no se puede obtener auth.");
       }
       const ADMIN_EMAIL = 'ortolanimichael@gmail.com'; // TU EMAIL
-    </script> 
+    </script>
 
     <script src="app.js" defer></script>
     <script src="auth.js" defer></script>

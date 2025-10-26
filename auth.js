@@ -18,8 +18,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const userLoggedOutMobileRegisterLi = document.getElementById('user-logged-out-mobile-register');
     const userLoggedInMobileLi = document.getElementById('user-logged-in-mobile');
     const logoutButtonMobile = document.getElementById('logout-button-mobile');
-    // Note: There isn't a specific admin link for mobile in the provided HTML structure (it's inside nav-extra).
-    // If you add one inside .nav-links later, select it here.
+
+    // *** NUEVO: Mobile Email Display (in main nav) ***
+    const userEmailSpanMobile = document.getElementById('user-email-mobile');
 
     // Login Form Elements (only if on login page)
     const loginForm = document.getElementById('login-form');
@@ -49,10 +50,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (userLoggedOutMobileRegisterLi) userLoggedOutMobileRegisterLi.style.display = 'none';
             if (userLoggedInMobileLi) userLoggedInMobileLi.style.display = 'block'; // Or 'list-item'
 
+            // *** NUEVO: Update Mobile Email Display (in main nav) ***
+            if (userEmailSpanMobile) {
+                userEmailSpanMobile.textContent = user.email;
+                userEmailSpanMobile.style.display = 'inline'; // Or 'block' based on final CSS
+            }
+
             // Show Admin Link (Desktop) if applicable
-            // Check if ADMIN_EMAIL is defined (it should be in the HTML script tag)
             if (typeof ADMIN_EMAIL !== 'undefined' && user.email === ADMIN_EMAIL) {
-                if (adminLinkDesktop) adminLinkDesktop.style.display = 'inline'; // Or 'block' depending on layout needs
+                if (adminLinkDesktop) adminLinkDesktop.style.display = 'inline';
                 console.log("Admin user detected.");
             } else {
                 if (adminLinkDesktop) adminLinkDesktop.style.display = 'none';
@@ -72,6 +78,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (userLoggedOutMobileLi) userLoggedOutMobileLi.style.display = 'block'; // Or 'list-item'
             if (userLoggedOutMobileRegisterLi) userLoggedOutMobileRegisterLi.style.display = 'block'; // Or 'list-item'
             if (userLoggedInMobileLi) userLoggedInMobileLi.style.display = 'none';
+
+            // *** NUEVO: Update Mobile Email Display (in main nav) ***
+            if (userEmailSpanMobile) {
+                userEmailSpanMobile.textContent = '';
+                userEmailSpanMobile.style.display = 'none';
+            }
         }
     });
 
@@ -80,7 +92,6 @@ document.addEventListener('DOMContentLoaded', () => {
         logoutButton.addEventListener('click', () => {
             auth.signOut().then(() => {
                 console.log('User signed out successfully.');
-                // Redirect to homepage or login page after logout if desired
                 window.location.href = 'index.html';
             }).catch((error) => {
                 console.error('Sign out error:', error);
@@ -92,7 +103,6 @@ document.addEventListener('DOMContentLoaded', () => {
         logoutButtonMobile.addEventListener('click', () => {
             auth.signOut().then(() => {
                 console.log('User signed out successfully from mobile.');
-                // Redirect to homepage or login page after logout if desired
                 window.location.href = 'index.html';
             }).catch((error) => {
                 console.error('Sign out error (mobile):', error);
@@ -103,25 +113,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Login Form Handler ---
     if (loginForm) {
         loginForm.addEventListener('submit', (e) => {
-            e.preventDefault(); // Prevent form submission
-
+            e.preventDefault();
             const email = loginEmailInput.value;
             const password = loginPasswordInput.value;
-
             auth.signInWithEmailAndPassword(email, password)
                 .then((userCredential) => {
-                    // Signed in
-                    const user = userCredential.user;
-                    console.log('Login successful:', user.email);
-                    if (loginErrorP) loginErrorP.style.display = 'none'; // Hide error message
-                    // Redirect to homepage or dashboard
+                    console.log('Login successful:', userCredential.user.email);
+                    if (loginErrorP) loginErrorP.style.display = 'none';
                     window.location.href = 'index.html';
                 })
                 .catch((error) => {
                     console.error('Login error:', error.code, error.message);
                     if (loginErrorP) {
                         loginErrorP.textContent = getFriendlyAuthErrorMessage(error);
-                        loginErrorP.style.display = 'block'; // Show error message
+                        loginErrorP.style.display = 'block';
                     }
                 });
         });
@@ -130,12 +135,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Register Form Handler ---
     if (registerForm) {
         registerForm.addEventListener('submit', (e) => {
-            e.preventDefault(); // Prevent form submission
-
+            e.preventDefault();
             const email = registerEmailInput.value;
             const password = registerPasswordInput.value;
-
-            // Basic validation (more robust validation recommended)
             if (password.length < 6) {
                  if (registerErrorP) {
                     registerErrorP.textContent = 'La contraseña debe tener al menos 6 caracteres.';
@@ -143,21 +145,17 @@ document.addEventListener('DOMContentLoaded', () => {
                  }
                 return;
             }
-
             auth.createUserWithEmailAndPassword(email, password)
                 .then((userCredential) => {
-                    // Signed in
-                    const user = userCredential.user;
-                    console.log('Registration successful:', user.email);
-                     if (registerErrorP) registerErrorP.style.display = 'none'; // Hide error message
-                    // Redirect to homepage or login page
-                    window.location.href = 'index.html'; // Redirect to home after registration
+                    console.log('Registration successful:', userCredential.user.email);
+                     if (registerErrorP) registerErrorP.style.display = 'none';
+                    window.location.href = 'index.html';
                 })
                 .catch((error) => {
                     console.error('Registration error:', error.code, error.message);
                     if (registerErrorP) {
                         registerErrorP.textContent = getFriendlyAuthErrorMessage(error);
-                        registerErrorP.style.display = 'block'; // Show error message
+                        registerErrorP.style.display = 'block';
                     }
                 });
         });

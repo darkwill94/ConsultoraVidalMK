@@ -170,8 +170,10 @@ header {
     white-space: nowrap;
     border: none;
     cursor: pointer;
-    margin-left: 0.5rem;
+    margin-left: 0.5rem; /* Default margin for desktop */
 }
+
+/* *** MODIFICACIÓN: Eliminado el bloque .nav-extra > .cart-link {} que causaba advertencia. ***/
 
 .cart-link:hover,
 .auth-link:hover {
@@ -193,20 +195,21 @@ header {
     gap: 0.5rem;
 }
 #user-logged-in {
-    display: none;
+    display: none; /* Hidden by default, shown by JS */
     align-items: center;
     gap: 0.5rem;
 }
 
 
-#user-logged-in span {
+#user-logged-in span { /* Desktop Email */
     margin-right: 0.5rem;
-    font-weight: normal;
+    font-weight: normal; /* Changed from bold */
     font-size: 0.85rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 150px;
+    max-width: 150px; /* Limit width */
+    color: #555; /* Match mobile */
 }
 #logout-button {
     background-color: #777;
@@ -241,6 +244,21 @@ header {
     cursor: pointer;
     margin-left: -1px; /* Superponer */
     font-size: 0.9rem;
+}
+
+/* *** NUEVO: Estilo para el email en móvil (oculto por defecto) *** */
+#user-email-mobile {
+    display: none; /* Oculto por defecto, JS lo muestra */
+    font-weight: bold;
+    font-size: 0.9rem;
+    color: #555;
+    max-width: 120px; /* Ajusta según necesites */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-left: auto; /* Empuja hacia la derecha */
+    margin-right: 0.5rem; /* Espacio antes del carrito */
+    align-self: center; /* Centrar verticalmente */
 }
 
 
@@ -989,7 +1007,9 @@ main#search-results-page-container .mensaje-vacio {
 @media (max-width: 1024px) {
 
     /* 1. Ajustar el header y top-bar */
-    .main-nav { padding: 0.5rem 1rem; max-width: 100%; margin: 0; }
+    /* *** MODIFICACIÓN: Ajustar padding main-nav y ocultar auth PC *** */
+    .main-nav { padding: 0.5rem 1rem; max-width: 100%; margin: 0; display: flex; align-items: center; justify-content: space-between; }
+    .nav-extra { display: none; } /* Ocultar contenedor Auth/Admin/Logout de PC */
     .top-bar { padding: 0; height: 50px; }
 
     /* === REGLAS DE VISIBILIDAD PARA MÓVIL === */
@@ -1007,7 +1027,7 @@ main#search-results-page-container .mensaje-vacio {
     #top-bar-desktop-banner {
         display: none;
     }
-    
+
     /* Ocultar logos individuales de PC */
     #top-bar-desktop-logos {
         display: none;
@@ -1017,18 +1037,33 @@ main#search-results-page-container .mensaje-vacio {
     .top-bar #search-form {
         display: none;
     }
+    
+    /* *** MODIFICACIÓN: Mostrar Carrito y Email en Móvil *** */
+    /* Asegurar que el carrito movido sea visible y esté a la derecha */
+     .main-nav > .cart-link {
+         display: inline-block; /* Mostrar carrito */
+         margin-left: 0; /* Resetear margen izquierdo default */
+         margin-right: 0.5rem; /* Espacio antes de la hamburguesa */
+         order: 2; /* Orden: Logo(0), Email(1), Carrito(2), Hamburguesa(3) */
+     }
+     /* Mostrar email móvil y posicionarlo */
+     #user-email-mobile {
+         display: inline; /* Mostrar cuando JS lo active */
+         order: 1; /* Ponerlo después del logo */
+         margin-left: auto; /* Empujar hacia la derecha */
+         margin-right: 0.5rem; /* Espacio antes del carrito */
+     }
+     .logo { order: 0; margin-right: 0; } /* Asegurar que el logo esté primero */
+     .hamburger-menu { order: 3; } /* Asegurar que la hamburguesa esté al final */
 
-    /* 2. Ocultar menú horizontal y nav-extra (solo auth) */
+
+    /* 2. Ocultar menú horizontal */
     .nav-links {
         display: none; flex-direction: column; width: 100%;
         position: absolute; top: 66px; /* Ajustar si altura de .main-nav cambia */
         left: 0; background-color: #fff; box-shadow: 0 5px 10px rgba(0,0,0,0.1);
         padding: 0; margin: 0; z-index: 999; gap: 0; border-top: 1px solid #f1f1f1;
     }
-    /* Ocultar solo auth/admin/logout */
-     .nav-extra { display: none; }
-     /* Asegurar que el carrito movido sea visible */
-     .main-nav > .cart-link { display: inline-block; } /* Mostrar carrito */
 
 
     /* 3. Mostrar el icono de hamburguesa */
@@ -1037,19 +1072,22 @@ main#search-results-page-container .mensaje-vacio {
     /* 4. Estilos del menú desplegable activo CON SCROLL */
     .nav-links.active {
         display: flex;
-        /* *** MODIFICACIÓN: Añadido !important *** */
         max-height: calc(100vh - 66px) !important; /* Altura máxima = pantalla - altura aprox. header */
         overflow-y: auto !important; /* Permitir scroll vertical */
     }
     .nav-links li { width: 100%; text-align: left; border-bottom: 1px solid #f1f1f1;}
+    .nav-links li:last-child { border-bottom: none; } /* Quitar borde del último item */
     .nav-links a { padding: 1rem 1.5rem; }
 
-    /* *** NUEVO: Mostrar el buscador DENTRO del menú activo *** */
+    /* *** Mostrar el buscador DENTRO del menú activo *** */
     .nav-links.active #search-form-nav {
         display: flex; /* Mostrar como flex */
+        order: -1; /* Poner el buscador primero en el menú desplegable */
+        border-bottom: 1px solid #f1f1f1; /* Añadir separador */
     }
-    
-    /* *** NUEVO: Estilos opcionales para botones Auth en móvil *** */
+
+    /* *** Estilos para botones Auth en móvil *** */
+    .auth-mobile-link { border-bottom: none !important; } /* Quitar borde doble */
     .auth-mobile-link a, .auth-mobile-link button {
         display: block;
         text-align: center;
@@ -1075,7 +1113,6 @@ main#search-results-page-container .mensaje-vacio {
          color: white;
          width: calc(100% - 3rem); /* Ocupar ancho menos márgenes */
     }
-    /* *** FIN: Estilos opcionales Auth móvil *** */
 
     /* 5. Sub-menús (dropdown) en línea */
     .dropdown-content { position: static; display: block; box-shadow: none; border-top: none; min-width: auto; background-color: #f9f9f9;}
@@ -1124,6 +1161,10 @@ main#search-results-page-container .mensaje-vacio {
     .top-bar { height: 40px; } /* Más pequeña */
     .barra-logos-scroll img { height: 25px; margin: 0 10px;} /* Banner/Logos más pequeños */
     .main-nav { padding: 0.5rem; } /* Menos padding */
+     /* Ajustar altura del menú desplegable si header es más pequeño */
+    .nav-links { top: 51px; /* Nueva altura aprox. 40px + 10px padding + 1px borde */ }
+    .nav-links.active { max-height: calc(100vh - 51px) !important; }
+
 }
 
 /* ============================================== */
