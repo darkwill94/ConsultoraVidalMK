@@ -212,6 +212,7 @@ header {
     color: #555; /* Match mobile */
 }
 #logout-button {
+    display: none; /* <--- MODIFICACIÓN: Oculta el botón Cerrar Sesión en PC */
     background-color: #777;
     color: white;
     padding: 6px 10px;
