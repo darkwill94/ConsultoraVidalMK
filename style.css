@@ -395,30 +395,6 @@ main.admin-container {
 .boton-agregar:hover { background-color: #e91e63; color: white; }
 .boton-agregar:active { transform: scale(0.98); }
 
-/* --- ASEGÚRATE DE BORRAR O COMENTAR CUALQUIER MEDIA QUERY @media que afecte a .tarjeta-producto o sus hijos y los ponga en columna --- */
-/* Example commented out:
-@media (max-width: 480px) {
-    .tarjeta-producto {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    .product-carousel {
-        width: 100%;
-        height: auto;
-        aspect-ratio: 4 / 3;
-        border-right: none;
-        border-bottom: 1px solid #eee;
-    }
-    .producto-info {
-        padding: 1rem;
-    }
-}
-*/
-/* ============================================== */
-/* === FIN ESTILOS REFORZADOS v2              === */
-/* ============================================== */
-
-
 /* --- Pie de página --- */
 footer {
     text-align: center;
@@ -926,3 +902,203 @@ main#search-results-page-container .mensaje-vacio {
      white-space: pre-wrap;
      word-wrap: break-word;
 }
+
+/* ============================================== */
+/* === INICIO: CÓDIGO RESPONSIVE (HAMBURGUESA) === */
+/* ============================================== */
+
+/* --- Estilos del Icono de Hamburguesa --- */
+/* (Añadido fuera de la media query) */
+.hamburger-menu {
+    display: none; /* Oculto en PC por defecto */
+    cursor: pointer;
+    padding: 10px;
+    z-index: 1002; /* Encima de todo */
+    order: 3; /* Se pone al final en el flex-container del nav */
+}
+.hamburger-menu .bar {
+    display: block;
+    width: 25px;
+    height: 3px;
+    margin: 5px auto;
+    background-color: #333;
+    transition: all 0.3s ease-in-out;
+}
+/* Animación de Hamburguesa a "X" */
+.hamburger-menu.active .bar:nth-child(1) {
+    transform: translateY(8px) rotate(45deg);
+}
+.hamburger-menu.active .bar:nth-child(2) {
+    opacity: 0;
+}
+.hamburger-menu.active .bar:nth-child(3) {
+    transform: translateY(-8px) rotate(-45deg);
+}
+
+
+/* --- Punto de corte principal para móviles (reemplaza tu @media original) --- */
+@media (max-width: 1024px) {
+
+    /* 1. Ajustar el header */
+    .main-nav {
+        padding: 0.5rem 1rem;
+        max-width: 100%; /* Ocupa todo el ancho */
+        margin: 0;
+    }
+    
+    .top-bar {
+        padding: 0.5rem 1rem;
+    }
+
+    /* 2. Ocultar el menú horizontal y la búsqueda */
+    .nav-links {
+        display: none; /* Oculto por defecto */
+        flex-direction: column; /* Menú vertical */
+        width: 100%;
+        position: absolute;
+        top: 66px; /* Ajustar según altura del header (logo-img 50px + padding) */
+        left: 0;
+        background-color: #fff;
+        box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+        padding: 0;
+        margin: 0;
+        z-index: 999; /* Debajo del header (1000) */
+        gap: 0;
+        border-top: 1px solid #f1f1f1;
+    }
+    #search-form {
+        display: none; /* Ocultamos la búsqueda del nav */
+    }
+    .nav-extra {
+        display: none; /* Ocultamos los botones de auth/carrito del nav */
+    }
+
+    /* 3. Mostrar el icono de hamburguesa */
+    .hamburger-menu {
+        display: block;
+    }
+    
+    /* 4. Estilos del menú desplegable cuando está activo */
+    .nav-links.active {
+        display: flex; /* Se muestra al hacer clic */
+    }
+
+    .nav-links li {
+        width: 100%;
+        text-align: left;
+        border-bottom: 1px solid #f1f1f1;
+    }
+    .nav-links a {
+        padding: 1rem 1.5rem;
+    }
+
+    /* 5. Mostrar sub-menús (dropdown) en línea */
+    .dropdown-content {
+        position: static;
+        display: block;
+        box-shadow: none;
+        border-top: none;
+        min-width: auto;
+        background-color: #f9f9f9;
+    }
+    .dropdown-content a {
+        padding-left: 2.5rem; /* Indentación */
+        color: #555;
+    }
+    .dropdown > a {
+         background-color: #f0f0f0; /* Destacar el link principal */
+    }
+    .dropdown:hover .dropdown-content {
+         display: block; /* Asegurarse que siga visible */
+    }
+    
+    /* 6. Ajustar el resto de la página */
+    main {
+        width: auto; /* Ancho automático */
+        margin: 1rem; /* Margen en móvil */
+        padding: 1rem; /* Padding en móvil */
+    }
+    main.contacto-container, main.sobre-container, main.consultora-container,
+    main.carrito-main-container, main.auth-container, main.admin-container {
+        width: auto;
+        max-width: 100%;
+        padding: 1.5rem 1rem;
+        margin: 1rem;
+        box-sizing: border-box;
+    }
+
+    /* 7. Arreglar tarjetas de producto en móvil */
+    .tarjeta-producto {
+        flex-direction: column !important; /* Forzar columna */
+        width: 95%;
+        max-width: 350px; /* Un ancho máximo agradable */
+    }
+    .product-carousel {
+        width: 100%;
+        height: auto;
+        padding-top: 100%; /* Ratio 1:1 */
+        border-right: none;
+        border-bottom: 1px solid #eee;
+    }
+    .producto-info {
+        padding: 1rem;
+    }
+
+    /* 8. Arreglar grilla de categorías */
+    #catalogo-container .tarjeta-categoria {
+        width: 90%;
+        max-width: 350px;
+    }
+
+    /* 9. Arreglar formulario admin */
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    /* 10. Ajustar Hero Banner */
+    .hero-banner {
+        height: 250px;
+    }
+    .hero-content h2 {
+        font-size: 1.8rem;
+    }
+    .hero-content p {
+        font-size: 1rem;
+    }
+
+    /* 11. Ajustar Carrito */
+    .carrito-item {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    .boton-eliminar {
+        margin-left: 0;
+        margin-top: 0.5rem;
+    }
+
+} /* --- FIN de @media (max-width: 1024px) --- */
+
+
+@media (max-width: 480px) {
+    .logo .logo-img {
+        max-height: 40px;
+    }
+    /* Ajustar top del menú desplegable si la altura del header cambió */
+    .nav-links {
+        top: 56px; 
+    }
+    .hero-content {
+        padding: 1.5rem 1rem;
+    }
+    .hero-content h2 {
+        font-size: 1.5rem;
+    }
+    .tarjeta-producto {
+        width: 100%; /* Ocupar todo el ancho en pantallas muy pequeñas */
+    }
+}
+
+/* ============================================== */
+/* === FIN: CÓDIGO RESPONSIVE (HAMBURGUESA) === */
+/* ============================================== */

@@ -6,7 +6,7 @@
     <title>Administración - Mi Tienda</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .nav-links { gap: 2.5rem; }
+        /* MODIFICADO: Eliminada la regla .nav-links { gap: 2.5rem; } */
         .admin-nav-link { text-decoration: none; color: #333; font-weight: bold; font-size: 0.9rem; text-transform: uppercase; margin-right: 0.5rem; }
         #user-email { font-weight: bold; font-size: 0.9rem; color: #555; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     </style>
@@ -29,7 +29,7 @@
                      <img src="https://res.cloudinary.com/dgrfs58n6/image/upload/v1761336043/Stefania_Vidal_1_qekwcc.jpg" alt="Logo Stefania Vidal" class="logo-img">
                  </a>
              </div>
-            <ul class="nav-links">
+             <ul class="nav-links">
                  <li class="dropdown">
                      <a href="#">HISTORIAS</a>
                      <div class="dropdown-content">
@@ -71,6 +71,12 @@
                     <button id="logout-button" class="auth-link">Cerrar Sesión</button>
                  </div>
                  <a href="carrito.html" class="cart-link">🛒 Carrito</a>
+             </div>
+             
+             <div class="hamburger-menu">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
              </div>
         </nav>
     </header>

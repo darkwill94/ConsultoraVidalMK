@@ -67,6 +67,10 @@ function initializePageLogic() {
 
     // El buscador ahora está en el header, así que se inicializa en CADA página
     setupSearchForm();
+    
+    // +++ AÑADIDO: Inicializar el menú hamburguesa en CADA página +++
+    setupHamburgerMenu();
+    // +++ FIN AÑADIDO +++
 
     // Lógica Específica
     const pathname = window.location.pathname; // e.g., "/admin/" o "/productos-marykay"
@@ -1783,3 +1787,27 @@ document.body.addEventListener('click', function(event) {
     }
 });
 
+
+// +++ AÑADIDO: Lógica del Menú Hamburguesa +++
+function setupHamburgerMenu() {
+    // Busca los elementos en el header. Asumimos que están en CADA página.
+    const hamburgerBtn = document.querySelector('.hamburger-menu');
+    const navLinksMenu = document.querySelector('.nav-links'); // Este es el <ul>
+
+    if (hamburgerBtn && navLinksMenu) {
+        hamburgerBtn.addEventListener('click', () => {
+            console.log("Clic en Hamburguesa");
+            // Alterna la clase 'active' en el botón (para la animación a 'X')
+            hamburgerBtn.classList.toggle('active');
+            // Alterna la clase 'active' en el menú (para mostrar/ocultar)
+            navLinksMenu.classList.toggle('active');
+        });
+    } else {
+        // No mostramos error en login/registro donde el nav es diferente
+        const pathname = window.location.pathname;
+        if (!pathname.includes('login') && !pathname.includes('registro')) {
+            console.warn("No se encontró '.hamburger-menu' o '.nav-links'. El menú móvil no funcionará.");
+        }
+    }
+}
+// +++ FIN AÑADIDO +++
