@@ -30,44 +30,38 @@ header {
 /* --- Barra Superior con Banner --- */
 .top-bar {
     background-color: #fff;
-    padding: 0.5rem 0; /* Ajustar padding */
+    padding: 0.5rem 0; 
     border-bottom: 1px solid #eee;
-    display: flex; /* Cambiado de flex a block para overflow */
-    justify-content: center; /* Centrar el contenedor de logos */
+    display: flex; 
+    justify-content: center; 
     align-items: center;
-    /* *** MODIFICACIÓN: Ocultar desbordamiento y altura fija *** */
     overflow: hidden;
-    height: 50px; /* Altura fija para la barra (ajustar según logos) */
-    position: relative; /* Para la animación */
+    height: 50px; 
+    position: relative; 
 }
 
-/* *** INICIO: MODIFICACIÓN (Reglas de visibilidad) *** */
+/* === REGLAS DE VISIBILIDAD PARA PC (Por defecto) === */
 
-/* 1. Contenedor de logos (Oculto en PC por defecto) */
-.barra-logos-scroll {
+/* 1. Ocultar el carrusel móvil en PC */
+#top-bar-mobile {
     display: none;
-    align-items: center;
-    width: max-content; 
-    position: absolute; 
-    left: 0; 
 }
 
-/* 2. Banner estático de PC (Visible en PC por defecto) */
-.top-bar-desktop-banner {
-    display: block; /* O 'inline-block' si prefieres */
-    height: 100%; /* Asegura que la imagen no desborde */
+/* 2. Mostrar el banner estático de PC */
+#top-bar-desktop {
+    display: block;
+    height: 100%;
 }
-.top-bar-desktop-banner img {
-    height: 100%; /* La imagen se ajusta a la altura del top-bar */
+#top-bar-desktop img {
+    height: 100%;
     width: auto;
 }
 
-/* 3. Buscador de PC (Visible en PC por defecto) */
+/* 3. Mostrar el buscador de PC */
 .top-bar #search-form {
-    display: flex; /* O 'block', ajusta si es necesario */
-    margin-left: 2rem; /* Añade espacio entre el banner y el buscador */
+    display: flex;
+    margin-left: 2rem;
 }
-/* Estilos internos del buscador (puedes ajustar) */
 .top-bar #search-form input {
     padding: 8px 12px;
     border: 1px solid #ddd;
@@ -85,15 +79,21 @@ header {
     font-size: 0.9rem;
 }
 
-/* *** FIN: MODIFICACIÓN (Reglas de visibilidad) *** */
-
-
-.barra-logos-scroll img {
-    height: 35px; /* Altura fija para los logos */
-    width: auto;
-    margin: 0 15px; /* Espacio entre logos */
-    flex-shrink: 0; /* Evitar que los logos se encojan */
+/* Estilos base para el carrusel (no afecta visibilidad) */
+.barra-logos-scroll {
+    align-items: center;
+    width: max-content; 
+    position: absolute; 
+    left: 0; 
 }
+.barra-logos-scroll img {
+    height: 35px; 
+    width: auto;
+    margin: 0 15px; 
+    flex-shrink: 0; 
+}
+/* --- Fin Barra Superior --- */
+
 
 .main-nav {
     display: flex;
@@ -989,31 +989,28 @@ main#search-results-page-container .mensaje-vacio {
 
     /* 1. Ajustar el header y top-bar */
     .main-nav { padding: 0.5rem 1rem; max-width: 100%; margin: 0; }
-    .top-bar { padding: 0; /* Sin padding lateral */ height: 50px; } /* Altura fija */
+    .top-bar { padding: 0; height: 50px; } 
 
-    /* *** INICIO: MODIFICACIÓN (Reglas de visibilidad para MÓVIL) *** */
+    /* === REGLAS DE VISIBILIDAD PARA MÓVIL === */
     
-    /* 1. Mostrar barra deslizante y animar */
-    .top-bar .barra-logos-scroll {
+    /* 1. Mostrar y animar el carrusel móvil */
+    #top-bar-mobile {
         display: flex;
         animation: scrollLogos 15s linear infinite alternate; 
     }
     .top-bar .barra-logos-scroll img {
-        height: 30px; /* Reducir altura de logos en móvil */
+        height: 30px; 
     }
     
-    /* 2. Ocultar banner estático de PC */
-    .top-bar-desktop-banner {
+    /* 2. Ocultar el banner estático de PC */
+    #top-bar-desktop {
         display: none;
     }
     
-    /* 3. Ocultar formulario de búsqueda de PC */
+    /* 3. Ocultar el buscador de PC */
     .top-bar #search-form { 
         display: none; 
     }
-    
-    /* *** FIN: MODIFICACIÓN (Reglas de visibilidad para MÓVIL) *** */
-
 
     /* 2. Ocultar menú horizontal y nav-extra */
     .nav-links {

@@ -4,18 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Tienda</title>
-    <link rel="stylesheet" href="style.css?v=1.3">
+    <link rel="stylesheet" href="style.css?v=1.4">
 </head>
 <body>
 
     <header>
         <div class="top-bar">
         
-             <a href="index.html" class="top-bar-desktop-banner">
+             <a href="index.html" id="top-bar-desktop">
                 <img src="https://res.cloudinary.com/dgrfs58n6/image/upload/v1761256896/banner_4_r8x0te.jpg" alt="Banner principal de marcas">
              </a>
 
-             <div class="barra-logos-scroll">
+             <div id="top-bar-mobile" class="barra-logos-scroll">
                 <img src="https://res.cloudinary.com/dgrfs58n6/image/upload/v1761491740/arbell-logo_u1u1b1.png" alt="Arbell">
                 <img src="https://res.cloudinary.com/dgrfs58n6/image/upload/v1761491740/biogreen-logo_y21k5v.png" alt="Biogreen">
                 <img src="https://res.cloudinary.com/dgrfs58n6/image/upload/v1761491741/marykay-logo_v139mc.png" alt="Mary Kay">
@@ -29,7 +29,8 @@
                 <button type="submit" id="search-button">Buscar</button>
              </form>
              
-             </div>
+        </div>
+        
         <nav class="main-nav">
              <div class="logo">
                  <a href="index.html">
@@ -38,14 +39,14 @@
              </div>
 
              <ul class="nav-links">
-             
+                 
                  <li id="search-form-nav">
                      <form>
                         <input type="search" id="search-input-nav" placeholder="Buscar productos...">
                         <button type="submit" id="search-button-nav">Buscar</button>
                      </form>
                  </li>
-             
+                 
                  <li class="dropdown">
                      <a href="#">HISTORIAS</a>
                      <div class="dropdown-content">
