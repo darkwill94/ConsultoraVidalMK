@@ -30,19 +30,19 @@ header {
 /* --- Barra Superior con Banner --- */
 .top-bar {
     background-color: #fff;
-    padding: 0.5rem 0; 
+    padding: 0.5rem 0;
     border-bottom: 1px solid #eee;
-    display: flex; 
-    justify-content: center; 
+    display: flex;
+    justify-content: center;
     align-items: center;
     overflow: hidden;
-    height: 50px; 
-    position: relative; 
+    height: 50px;
+    position: relative;
 }
 
 /* === REGLAS DE VISIBILIDAD PARA PC (Por defecto) === */
 
-/* 1. Ocultar el banner móvil en PC */
+/* 1. Ocultar el carrusel móvil en PC */
 #top-bar-mobile-scroll {
     display: none;
 }
@@ -81,16 +81,17 @@ header {
 
 /* Estilos base para el carrusel (no afecta visibilidad) */
 .barra-logos-scroll {
+    display: flex; /* Added flex here for base alignment */
     align-items: center;
-    width: max-content; 
-    position: absolute; 
-    left: 0; 
+    width: max-content;
+    position: absolute;
+    left: 0;
 }
 .barra-logos-scroll img {
     height: 35px; /* Altura base para la imagen del banner */
     width: auto;
-    margin: 0 15px; 
-    flex-shrink: 0; 
+    margin: 0 15px;
+    flex-shrink: 0;
 }
 /* --- Fin Barra Superior --- */
 
@@ -146,7 +147,7 @@ header {
     color: #e91e63;
 }
 
-/* Contenedor para Auth y Carrito */
+/* Contenedor para Auth y Carrito (Solo PC) */
 .nav-extra {
     display: flex;
     align-items: center;
@@ -989,43 +990,57 @@ main#search-results-page-container .mensaje-vacio {
 
     /* 1. Ajustar el header y top-bar */
     .main-nav { padding: 0.5rem 1rem; max-width: 100%; margin: 0; }
-    .top-bar { padding: 0; height: 50px; } 
+    .top-bar { padding: 0; height: 50px; }
 
     /* === REGLAS DE VISIBILIDAD PARA MÓVIL === */
-    
+
     /* 1. Mostrar y animar el banner móvil */
     #top-bar-mobile-scroll {
         display: flex;
-        animation: scrollLogos 15s linear infinite alternate; 
+        animation: scrollLogos 15s linear infinite alternate;
     }
     .top-bar .barra-logos-scroll img {
         height: 30px; /* Altura de banner en móvil */
     }
-    
-    /* 2. Ocultar los logos de PC */
-    #top-bar-desktop-logos {
+
+    /* 2. Ocultar el banner estático de PC */
+    #top-bar-desktop-banner {
         display: none;
     }
     
-    /* 3. Ocultar el buscador de PC */
-    .top-bar #search-form { 
-        display: none; 
+    /* Ocultar logos individuales de PC */
+    #top-bar-desktop-logos {
+        display: none;
     }
 
-    /* 2. Ocultar menú horizontal y nav-extra */
+    /* 3. Ocultar el buscador de PC */
+    .top-bar #search-form {
+        display: none;
+    }
+
+    /* 2. Ocultar menú horizontal y nav-extra (solo auth) */
     .nav-links {
         display: none; flex-direction: column; width: 100%;
         position: absolute; top: 66px; /* Ajustar si altura de .main-nav cambia */
         left: 0; background-color: #fff; box-shadow: 0 5px 10px rgba(0,0,0,0.1);
         padding: 0; margin: 0; z-index: 999; gap: 0; border-top: 1px solid #f1f1f1;
     }
-    .nav-extra { display: none; }
+    /* Ocultar solo auth/admin/logout */
+     .nav-extra { display: none; }
+     /* Asegurar que el carrito movido sea visible */
+     .main-nav > .cart-link { display: inline-block; } /* Mostrar carrito */
+
 
     /* 3. Mostrar el icono de hamburguesa */
     .hamburger-menu { display: block; }
 
-    /* 4. Estilos del menú desplegable activo */
-    .nav-links.active { display: flex; }
+    /* 4. Estilos del menú desplegable activo CON SCROLL */
+    .nav-links.active {
+        display: flex;
+        /* *** MODIFICACIÓN: Añadido !important *** */
+        max-height: calc(100vh - 66px) !important; /* Altura máxima = pantalla - altura aprox. header */
+        overflow-y: auto !important; /* Permitir scroll vertical */
+    }
     .nav-links li { width: 100%; text-align: left; border-bottom: 1px solid #f1f1f1;}
     .nav-links a { padding: 1rem 1.5rem; }
 
@@ -1077,7 +1092,7 @@ main#search-results-page-container .mensaje-vacio {
     .hero-content h2 { font-size: 1.5rem; }
     .tarjeta-producto { width: 100%; }
     .top-bar { height: 40px; } /* Más pequeña */
-    .barra-logos-scroll img { height: 25px; margin: 0 10px;} /* Logos más pequeños */
+    .barra-logos-scroll img { height: 25px; margin: 0 10px;} /* Banner/Logos más pequeños */
     .main-nav { padding: 0.5rem; } /* Menos padding */
 }
 
