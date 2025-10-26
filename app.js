@@ -1655,7 +1655,7 @@ function handleFinalizarCompra() {
     });
     mensaje += `\n*TOTAL DEL PEDIDO: $${total.toFixed(2)}*`;
 
-    const numeroWhatsApp = "5493571602521"; // Replace with your WhatsApp number
+    const numeroWhatsApp = "5493571618367"; // Replace with your WhatsApp number
     const mensajeCodificado = encodeURIComponent(mensaje);
     const urlWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${mensajeCodificado}`;
     window.open(urlWhatsApp, '_blank'); // Open WhatsApp link in new tab
