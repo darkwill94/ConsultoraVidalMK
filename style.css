@@ -147,6 +147,12 @@ header {
     color: #e91e63;
 }
 
+/* Forzar la ocultación de los items de autenticacion movil en vista de escritorio */
+.nav-links li.auth-mobile-link {
+    display: none !important;
+}
+
+
 /* Contenedor para Auth y Carrito (Solo PC) */
 .nav-extra {
     display: flex;
@@ -173,7 +179,6 @@ header {
     margin-left: 0.5rem; /* Default margin for desktop */
 }
 
-/* *** MODIFICACIÓN: Eliminado el bloque .nav-extra > .cart-link {} que causaba advertencia. ***/
 
 .cart-link:hover,
 .auth-link:hover {
@@ -203,24 +208,24 @@ header {
 
 #user-logged-in span { /* Desktop Email */
     margin-right: 0.5rem;
-    font-weight: normal; /* Changed from bold */
+    font-weight: normal; 
     font-size: 0.85rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 150px; /* Limit width */
-    color: #555; /* Match mobile */
+    max-width: 150px; 
+    color: #555; 
 }
+
+/* Specific styles for the #logout-button (the rounded one) */
 #logout-button {
-    display: none; /* <--- MODIFICACIÓN: Oculta el botón Cerrar Sesión en PC */
-    background-color: #777;
-    color: white;
-    padding: 6px 10px;
-    font-size: 0.8rem;
+    /* No display:none needed here, inherits from .auth-link */
 }
 #logout-button:hover {
-    background-color: #555;
+    background-color: #e0e0e0; /* Subtle grey on hover */
+    color: #333; /* Keep text color */
 }
+
 
 /* --- Buscador en NAV (oculto en desktop) --- */
 #search-form-nav {
@@ -1088,7 +1093,9 @@ main#search-results-page-container .mensaje-vacio {
     }
 
     /* *** Estilos para botones Auth en móvil *** */
-    .auth-mobile-link { border-bottom: none !important; } /* Quitar borde doble */
+    /* La regla .nav-links li.auth-mobile-link { display: none !important; } de arriba los oculta en PC */
+    /* Aqui solo definimos como se ven CUANDO JS los muestra en movil */
+    .auth-mobile-link { border-bottom: none !important; } 
     .auth-mobile-link a, .auth-mobile-link button {
         display: block;
         text-align: center;
