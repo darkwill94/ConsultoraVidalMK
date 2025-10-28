@@ -1178,3 +1178,103 @@ main#search-results-page-container .mensaje-vacio {
 /* ============================================== */
 /* === FIN: CÓDIGO RESPONSIVE (HAMBURGUESA) === */
 /* ============================================== */
+
+
+/* --- INICIO: NUEVOS ESTILOS v1.18 --- */
+
+/* Estilo para el Subtítulo en la página de detalle */
+.detalle-subtitulo {
+    font-size: 1.1rem;
+    font-style: italic;
+    color: #666;
+    margin-top: -0.25rem;
+    margin-bottom: 1rem;
+}
+
+/* --- INICIO: Estilos Acordeón Página Detalle (Estilo Imagen) --- */
+
+.detalle-acordeon-links-box {
+    border: 2px solid #e91e63; /* Borde rosa */
+    border-radius: 8px;
+    overflow: hidden; /* Para redondear las esquinas de los items */
+    margin-top: 1.5rem;
+}
+
+.acordeon-item-new {
+    border-bottom: 1px solid #f0f0f0; /* Separador sutil */
+}
+.acordeon-item-new:last-child {
+    border-bottom: none;
+}
+
+.acordeon-header-new {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 1rem 1.25rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    transition: background-color 0.2s;
+}
+.acordeon-header-new:hover {
+    background-color: #f9f9f9;
+}
+
+.acordeon-icono-new {
+    font-size: 1.2rem;
+    margin-right: 0.75rem;
+    color: #333;
+    width: 25px; /* Ancho fijo para alinear */
+    text-align: center;
+}
+
+.acordeon-titulo-new {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #555;
+    flex-grow: 1; /* Ocupa el espacio */
+}
+
+.acordeon-arrow-new {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #e91e63; /* Flecha rosa */
+    transition: transform 0.3s ease;
+    transform: rotate(0deg);
+}
+
+.acordeon-contenido-new {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+    padding: 0 1.25rem;
+    background-color: #fcfcfc; /* Fondo ligeramente distinto */
+}
+
+.acordeon-contenido-new p {
+    margin: 0 0 1.25rem 0;
+    padding-top: 1rem; /* Espacio al abrir */
+    border-top: 1px dashed #ddd; /* Separador del contenido */
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #555;
+    /* Alinear con el texto del título, no con el icono */
+    padding-left: calc(25px + 0.75rem); 
+}
+
+/* Estado Activo */
+.acordeon-item-new.active .acordeon-header-new {
+    background-color: #fdf6f8; /* Rosa muy suave */
+}
+.acordeon-item-new.active .acordeon-arrow-new {
+    transform: rotate(90deg);
+}
+.acordeon-item-new.active .acordeon-contenido-new {
+    max-height: 1000px; /* Suficientemente grande */
+    padding: 0 1.25rem; /* Mismo padding que en la transición */
+}
+
+/* --- FIN: Estilos Acordeón --- */
+/* --- FIN: NUEVOS ESTILOS v1.18 --- */

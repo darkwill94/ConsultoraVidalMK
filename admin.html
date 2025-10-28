@@ -4,17 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Administración - Mi Tienda</title>
-    <link rel="stylesheet" href="style.css">
-    <style>
-        /* Estilos inline específicos si los hubiera, aunque es mejor moverlos a style.css */
-        /* .admin-nav-link ya está en style.css, #user-email también */
+    <link rel="stylesheet" href="style.css?v=1.18"> <style>
+        /* Estilos inline específicos si los hubiera */
     </style>
 </head>
 <body>
 
     <header>
         <div class="top-bar">
-        
+
              <a href="index.html" id="top-bar-desktop-banner">
                 <img src="https://res.cloudinary.com/dgrfs58n6/image/upload/v1761256896/banner_4_r8x0te.jpg" alt="Banner principal de marcas">
              </a>
@@ -23,14 +21,14 @@
                 <img src="https://res.cloudinary.com/dgrfs58n6/image/upload/v1761256896/banner_4_r8x0te.jpg" alt="Marcas">
                 <img src="https://res.cloudinary.com/dgrfs58n6/image/upload/v1761256896/banner_4_r8x0te.jpg" alt="Marcas">
              </div>
-             
+
              <form id="search-form">
                 <input type="search" id="search-input" placeholder="Buscar productos...">
                 <button type="submit" id="search-button">Buscar</button>
              </form>
-             
+
         </div>
-        
+
         <nav class="main-nav">
              <div class="logo">
                  <a href="index.html">
@@ -41,14 +39,14 @@
              <span id="user-email-mobile" style="display: none;"></span>
 
              <ul class="nav-links">
-                 
+
                  <li id="search-form-nav">
                      <form>
                         <input type="search" id="search-input-nav" placeholder="Buscar productos...">
                         <button type="submit" id="search-button-nav">Buscar</button>
                      </form>
                  </li>
-                 
+
                  <li class="dropdown">
                      <a href="#">HISTORIAS</a>
                      <div class="dropdown-content">
@@ -78,22 +76,22 @@
                  </li>
                  <li><a href="oportunidad-mk.html">OPORTUNIDAD MK</a></li>
                  <li><a href="contacto.html">CONTÁCTANOS</a></li>
-                 
+
                  <li id="user-logged-out-mobile" class="auth-mobile-link"><a href="login.html">Iniciar Sesión</a></li>
                  <li id="user-logged-out-mobile-register" class="auth-mobile-link register-link-mobile"><a href="registro.html">Registrarse</a></li>
                  <li id="user-logged-in-mobile" class="auth-mobile-link" style="display: none;"><button id="logout-button-mobile">Cerrar Sesión</button></li>
              </ul>
-             
+
              <div class="nav-extra">
                  <div id="user-logged-out" style="display: flex;">
                      <a href="login.html" class="auth-link">Iniciar Sesión</a>
                      <a href="registro.html" class="auth-link register-link">Registrarse</a>
                  </div>
-                 
+
                  <div id="user-logged-in" style="display: none;">
                      <a id="admin-link-a" href="admin.html" class="auth-link" style="display: none; background-color: #ffc107; color: #333; margin-right: 5px;">ADMIN</a>
                      <span id="user-email" style="margin-right: 5px;"></span>
-                     <button id="logout-button" class="auth-link">Cerrar Sesión</button> 
+                     <button id="logout-button" class="auth-link">Cerrar Sesión</button>
                  </div>
              </div>
 
@@ -221,11 +219,18 @@
              <form id="add-product-form" class="admin-form">
                 <h4 id="form-title">Agregar Nuevo Producto</h4>
                 <input type="hidden" id="edit-product-id">
+                
                 <div class="form-group">
                     <label for="product-name">Nombre del Producto:</label>
                     <input type="text" id="product-name" required>
                 </div>
-                 <div class="form-row">
+                
+                <div class="form-group">
+                    <label for="product-subtitle">Sub-descripción (opcional):</label>
+                    <input type="text" id="product-subtitle" placeholder="Ej: (Para Piel Normal a Seca...)">
+                    <small>Texto corto que aparece debajo del nombre del producto.</small>
+                </div>
+                <div class="form-row">
                      <div class="form-group">
                          <label for="product-brand">Marca:</label>
                          <select id="product-brand" required>
@@ -254,15 +259,13 @@
                     <textarea id="product-image-urls" rows="5" placeholder="https://res.cloudinary.com/.../imagen1.jpg\nhttps://res.cloudinary.com/.../imagen2.png" required></textarea>
                      <small>Pega las URLs completas (https://...). La primera se usará como miniatura.</small>
                 </div>
-                <div class="form-group">
-                    <label for="product-description">Descripción del Producto:</label>
-                    <textarea id="product-description" rows="5" placeholder="Ingresa una descripción detallada del producto (incluye Beneficios, Aplicación, etc. aquí)."></textarea>
-                </div>
 
                 <div class="form-group">
-                    <input type="checkbox" id="product-details-visible" name="product-details-visible" checked>
-                    <label for="product-details-visible" style="display: inline; font-weight: normal; margin-left: 5px;">Mostrar detalles (Beneficios/Aplicación) por defecto en la tienda</label>
-                    <small>Si está marcado, la sección de detalles adicionales estará expandida inicialmente.</small>
+                    <label>Secciones de Detalles Adicionales:</label>
+                    <div id="detail-sections-container">
+                        </div>
+                    <button type="button" id="add-section-btn" class="admin-button add-button" style="margin-top: 10px;">+ Agregar Sección de Detalles</button>
+                    <small>Añade secciones como Beneficios, Modo de Uso, Ingredientes, etc. Todas empezarán contraídas en la tienda.</small>
                 </div>
                 <button type="submit" class="admin-button add-button" id="submit-product-button">Agregar Producto</button>
                 <button type="button" class="admin-button cancel-button" id="cancel-edit-button" style="display: none;">Cancelar Edición</button>
@@ -333,8 +336,7 @@
       }
       const ADMIN_EMAIL = 'ortolanimichael@gmail.com'; // 👈 ¡TU EMAIL DE ADMIN!
     </script>
-    <script src="app.js" defer></script>
-    <script src="auth.js" defer></script>
+    <script src="app.js?v=1.18" defer></script> <script src="auth.js" defer></script>
 
 </body>
 </html>

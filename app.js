@@ -26,34 +26,29 @@ function saveCarritoToStorage(carrito) {
     }
 }
 
-// --- Lógica Principal ---
+// --- LÓGICA DE INICIO ---
 document.addEventListener('DOMContentLoaded', () => {
     console.log("DOM Cargado. Esperando inicialización de Firebase...");
-    // Intervalo para verificar si Firebase está listo
     let checkFirebaseInterval = setInterval(() => {
-        // Verificar si las variables globales db y auth (definidas en el HTML) existen
         if (typeof db !== 'undefined' && typeof auth !== 'undefined' && typeof ADMIN_EMAIL !== 'undefined') {
-            clearInterval(checkFirebaseInterval); // Detener la verificación
+            clearInterval(checkFirebaseInterval); 
             console.log("Firebase y config OK detectados. Inicializando lógica de la página...");
             try {
-                 initializePageLogic(); // Llamar a la lógica principal
+                 initializePageLogic(); 
             } catch(e) {
                 console.error("Error CRÍTICO durante initializePageLogic:", e);
                  displayError(document.querySelector('main'), "Error fatal al inicializar la página.");
             }
-        } else {
-             // console.log("Esperando Firebase..."); // Opcional
         }
-    }, 150); // Verificar cada 150ms
+    }, 150); 
 
-    // Timeout de seguridad
     setTimeout(() => {
         if (typeof db === 'undefined' || typeof auth === 'undefined') {
             clearInterval(checkFirebaseInterval);
             console.error("Firebase no se inicializó después de 5 segundos.");
             displayError(document.querySelector('main'), "Error: No se pudo conectar a los servicios de Firebase.");
         }
-    }, 5000); // Esperar máximo 5 segundos
+    }, 5000); 
 
 }); // Fin DOMContentLoaded
 
@@ -64,33 +59,19 @@ function initializePageLogic() {
     if (typeof actualizarContadorCarrito === 'function') {
         actualizarContadorCarrito();
     }
-
-    // El buscador ahora está en el header, así que se inicializa en CADA página
     setupSearchForm();
-
-    // +++ AÑADIDO: Inicializar el menú hamburguesa en CADA página +++
     setupHamburgerMenu();
-    // +++ FIN AÑADIDO +++
 
     // Lógica Específica
-    const pathname = window.location.pathname; // e.g., "/admin/" o "/productos-marykay"
-
-    // +++ FIX: Mejorar la detección de página para Netlify "pretty URLs" +++
-    // Filtra partes vacías (ej. de "/admin/") y toma la última parte
+    const pathname = window.location.pathname; 
     const pathParts = pathname.split('/').filter(part => part !== '');
-    // Si no hay partes (solo "/"), usa 'index'. Si no, toma la última parte.
     const rawPageName = pathParts.length > 0 ? pathParts[pathParts.length - 1] : 'index';
-    // Quita .html si existe, para tener un nombre limpio (ej. "admin", "productos-marykay")
     const currentPage = rawPageName.replace('.html', '');
-    // +++ FIN FIX +++
 
-    console.log("Página actual detectada (normalizada):", currentPage); // Logueará 'admin', 'productos-marykay', 'index', etc.
+    console.log("Página actual detectada (normalizada):", currentPage); 
 
     try {
-
-        // +++ LÓGICA DE CATÁLOGO POR CATEGORÍAS (Mary Kay, Biogreen, Arbell y Nexo) +++
         const catalogoContainerCliente = document.getElementById('catalogo-container');
-
         const isCategoryPage = catalogoContainerCliente &&
                                 (currentPage === 'productos-marykay' ||
                                  currentPage === 'productos-biogreen' ||
@@ -106,45 +87,31 @@ function initializePageLogic() {
 
             if (brand) {
                 console.log(`Cargando catálogo por categorías para: ${brand}`);
-                // +++ FIX: Remover el 'else' que muestra "Esperando autenticación..." +++
                 auth.onAuthStateChanged(user => {
                     if (user) {
-                        // Esto se ejecutará cuando el usuario (admin O anónimo) esté listo
                         console.log("Auth listo para catálogo por categorías, iniciando...");
                         loadIntermediateBanner(brand);
                         iniciarCatalogoPorCategorias(brand, catalogoContainerCliente);
                     }
-                    // 'else' removido. Si el usuario es nulo, simplemente esperamos
-                    // a que auth.js inicie sesión anónima, lo que disparará este
-                    // listener de nuevo, pero esta vez con un 'user'.
                 });
-                // +++ FIN FIX +++
             }
         }
-        // +++ FIN LÓGICA DE CATÁLOGO POR CATEGORÍAS +++
-
+        
         // Páginas de Catálogo Productos Cliente (SOLO Novedades ahora)
         const productosContainerCliente = document.getElementById('productos-container');
-
         if (productosContainerCliente && currentPage !== 'admin' && currentPage.startsWith('productos-')) {
             let brandFilter = null;
             if (currentPage === 'productos-novedades') brandFilter = 'novedades';
 
             if (brandFilter) {
                 console.log("Cargando productos cliente (vista plana) para marca:", brandFilter);
-                 // +++ FIX: Remover el 'else' que muestra "Esperando autenticación..." +++
                  auth.onAuthStateChanged(user => {
                      if (user) {
                          console.log("Auth listo para productos cliente (plano), cargando...");
                          cargarProductosCliente(brandFilter, productosContainerCliente);
                      }
-                     // 'else' removido.
                  });
-                 // +++ FIN FIX +++
-            } else if (currentPage !== 'productos-marykay' &&
-                       currentPage !== 'productos-biogreen' &&
-                       currentPage !== 'productos-arbell' &&
-                       currentPage !== 'productos-nexo') {
+            } else if (!isCategoryPage) { // Evitar el warning en páginas de categoría
                  console.warn("No se pudo determinar la marca para filtrar productos en:", pathname);
                  displayError(productosContainerCliente, 'Error: No se pudo determinar la categoría.');
             }
@@ -153,19 +120,18 @@ function initializePageLogic() {
         // Página de Admin
         else if (currentPage === 'admin') {
              console.log("Ejecutando lógica para admin.html.");
-             // Este bloque 'else' es correcto, porque SÍ queremos denegar acceso
              auth.onAuthStateChanged(user => {
                 if (user && user.email === ADMIN_EMAIL) {
                     console.log("Admin verificado en admin.html.");
                     Promise.all([
                          loadCategoriesAdmin(),
                          cargarProductosAdmin(),
-                         loadHomepageSettingsAdmin(), // <-- AHORA SÍ EXISTE
+                         loadHomepageSettingsAdmin(), 
                          loadCategoryBannersAdmin(),
                          loadPageImagesAdmin()
                     ]).then(() => {
                          setupAddProductForm();
-                         setupHomepageSettingsForm(); // <-- AHORA SÍ EXISTE
+                         setupHomepageSettingsForm(); 
                          setupCategoryForm();
                          setupCategoryBannersForm();
                          setupPageImagesForm();
@@ -180,7 +146,7 @@ function initializePageLogic() {
                      if (adminMain) adminMain.innerHTML = '<h2>Acceso Denegado</h2><p>Debes ser administrador.</p>';
                 } else {
                      console.warn('Acceso denegado a admin.html (onAuthStateChanged no hay usuario). Redirigiendo a login...');
-                     window.location.href = 'login.html'; // Redirigir a login si no hay usuario
+                     window.location.href = 'login.html'; 
                 }
             });
         }
@@ -195,43 +161,61 @@ function initializePageLogic() {
         // Página de Búsqueda
         else if (currentPage === 'busqueda') {
             console.log("Ejecutando lógica para busqueda.html");
-             // +++ FIX: Remover el 'else' que muestra "Error de autenticación." +++
              auth.onAuthStateChanged(user => {
                 if (user) {
                     console.log("Auth listo en busqueda.html, ejecutando búsqueda...");
                     executeSearchPageQuery();
                 }
-                // 'else' removido.
              });
-             // +++ FIN FIX +++
         }
+        
+        // Página de Detalle de Producto
+        else if (currentPage === 'producto-detalle') {
+            console.log("Ejecutando lógica para producto-detalle.html");
+            const params = new URLSearchParams(window.location.search);
+            const productId = params.get('id'); 
+            
+            if (!productId) {
+                 console.error("No se proporcionó ID de producto en la URL.");
+                 displayError(document.querySelector('.detalle-producto-container'), "Error: No se especificó ningún producto.");
+                 const loadingMsg = document.querySelector('.detalle-producto-container .loading-message');
+                 if(loadingMsg) loadingMsg.style.display = 'none';
+                 return;
+            }
+            
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    console.log(`Auth listo en detalle.html, cargando producto ID: ${productId}`);
+                    loadProductDetails(productId); 
+                }
+             });
+        }
+
         // Página de Inicio
         else if (currentPage === 'index') {
             console.log("Ejecutando lógica para index.html");
-             // Este bloque 'else' está bien, es un fallback visual, no un error.
              auth.onAuthStateChanged(user => {
                 if (user) {
                     console.log("Auth listo en index.html, cargando carrusel...");
                     loadAndStartHeroCarousel();
                 } else {
-                    console.warn("Auth.onAuthStateChanged en index.html: Usuario aún no disponible (puede ser anónimo inicializando). Mostrando fallback.");
-                    showStaticHeroContent(); // Mostrar contenido estático mientras tanto
+                    console.warn("Auth.onAuthStateChanged en index.html: Usuario aún no disponible. Mostrando fallback.");
+                    showStaticHeroContent(); 
                 }
              });
         }
         // Página Oportunidad MK
         else if (currentPage === 'oportunidad-mk') {
              console.log("Ejecutando lógica para oportunidad-mk.html");
-             startOportunidadCarousel(); // Este no necesita auth para funcionar
+             startOportunidadCarousel();
         }
         // Página Quiero Ser Consultora
         else if (currentPage === 'quiero-ser-consultora') {
              console.log("Ejecutando lógica para quiero-ser-consultora.html");
-             // Este bloque 'else' está bien, es solo un warning.
              auth.onAuthStateChanged(user => {
                  if (user) {
                      console.log("Auth listo en Consultora, cargando imagen...");
-                     loadConsultoraImage(); // Carga la imagen principal dinámicamente
+                     loadConsultoraImage(); 
                  } else {
                      console.warn("Auth aún no listo para cargar imagen de Consultora.");
                  }
@@ -252,26 +236,26 @@ function displayError(container, message) {
         console.error("Contenedor no válido para mostrar error:", message);
         return;
     }
-    let errorElement = container.querySelector('.app-error-message'); // Usar una clase específica
+    let errorElement = container.querySelector('.app-error-message');
     if (!errorElement) {
         errorElement = document.createElement('p');
-        errorElement.className = 'error-message app-error-message'; // Añadir clase base y específica
-        errorElement.style.color = 'red'; // Asegurar visibilidad
+        errorElement.className = 'error-message app-error-message'; 
+        errorElement.style.color = 'red';
         errorElement.style.fontWeight = 'bold';
         errorElement.style.textAlign = 'center';
         errorElement.style.padding = '1rem';
-        const heading = container.querySelector('h2, h3, h4'); // Buscar cualquier título
+        const heading = container.querySelector('h2, h3, h4');
         if (heading && heading.nextSibling) {
              container.insertBefore(errorElement, heading.nextSibling);
         } else {
-             container.prepend(errorElement); // Añadir al principio
+             container.prepend(errorElement); 
         }
     }
     const loadingMsg = container.querySelector('.loading-message');
     if (loadingMsg) loadingMsg.style.display = 'none';
 
     errorElement.textContent = message + " Revisa la consola (F12) para detalles.";
-    console.error("Mensaje de error mostrado:", message); // Loguear también
+    console.error("Mensaje de error mostrado:", message); 
 }
 
 // --- Helper para contenido estático del banner ---
@@ -279,7 +263,7 @@ function showStaticHeroContent() {
      const heroBannerElement = document.querySelector('.hero-banner');
      if (heroBannerElement) {
          const slidesContainer = heroBannerElement.querySelector('.hero-carousel-slides');
-         if (slidesContainer) slidesContainer.innerHTML = ''; // Limpiar slides dinámicos
+         if (slidesContainer) slidesContainer.innerHTML = ''; 
          const staticContent = heroBannerElement.querySelector('.hero-content');
          if (staticContent) {
              staticContent.style.opacity = '1';
@@ -356,7 +340,7 @@ function startHeroCarousel() {
     slides.forEach((slide, index) => slide.classList.toggle('active', index === 0));
 
     heroCarouselInterval = setInterval(() => {
-        if(document.hidden) return; // Pausar si no está visible
+        if(document.hidden) return; 
         slides[currentIndex].classList.remove('active');
         currentIndex = (currentIndex + 1) % slides.length;
         slides[currentIndex].classList.add('active');
@@ -393,7 +377,6 @@ async function loadCategoryBannersAdmin() {
         biogreen: document.getElementById('banner-url-biogreen'),
         arbell: document.getElementById('banner-url-arbell'),
         nexo: document.getElementById('banner-url-nexo')
-        // novedades: document.getElementById('banner-url-novedades') // Si añades el input
     };
     if (!Object.values(inputs).every(input => input)) {
         console.warn('Alguno de los inputs de URL de banner no se encontró en admin.html.');
@@ -429,7 +412,6 @@ function setupCategoryBannersForm() {
         biogreen: document.getElementById('banner-url-biogreen'),
         arbell: document.getElementById('banner-url-arbell'),
         nexo: document.getElementById('banner-url-nexo')
-        // novedades: document.getElementById('banner-url-novedades') // Si añades el input
     };
     if (!form || !feedback || !button || !Object.values(inputs).every(input => input)) {
         console.warn('Elementos del formulario de banners de categoría no encontrados para listeners.');
@@ -478,7 +460,7 @@ async function loadIntermediateBanner(brand) {
         console.log(`No se encontró contenedor .banner-intermedio en la página de ${brand}.`);
         return;
     }
-    bannerContainer.innerHTML = ''; // Limpiar por si acaso
+    bannerContainer.innerHTML = '';
     const bannersDocRef = db.collection('config').doc('categoryBanners');
     try {
         console.log(`Cliente (${brand}): Buscando URL de banner en:`, bannersDocRef.path);
@@ -515,7 +497,6 @@ async function loadIntermediateBanner(brand) {
 async function loadPageImagesAdmin() {
     const inputs = {
         consultora: document.getElementById('page-image-consultora')
-        // sobreMk: document.getElementById('page-image-sobre-mk') // Si añades más inputs
     };
     if (!Object.values(inputs).every(input => input)) {
         console.warn('Alguno de los inputs de URL de imagen de página no se encontró en admin.html.');
@@ -548,7 +529,6 @@ function setupPageImagesForm() {
     const button = document.getElementById('save-page-images-button');
     const inputs = {
         consultora: document.getElementById('page-image-consultora')
-        // sobreMk: document.getElementById('page-image-sobre-mk') // Si añades más inputs
     };
     if (!form || !feedback || !button || !Object.values(inputs).every(input => input)) {
         console.warn('Elementos del formulario de imágenes de página no encontrados para listeners.');
@@ -595,7 +575,7 @@ async function loadConsultoraImage() {
     const imgElement = document.getElementById('consultora-main-image');
     if (!imgElement) {
         console.log('No se encontró elemento img#consultora-main-image.');
-        return; // No hacer nada si no hay imagen
+        return; 
     }
 
     const pageImagesDocRef = db.collection('config').doc('pageImages');
@@ -605,15 +585,15 @@ async function loadConsultoraImage() {
         let imageUrl = null;
         if (docSnap.exists) {
             const data = docSnap.data();
-            imageUrl = data['consultora']; // Busca la clave 'consultora'
+            imageUrl = data['consultora']; 
             console.log(`Cliente (Consultora): URL encontrada: ${imageUrl || 'Ninguna'}`);
         } else {
             console.log("Cliente (Consultora): Documento config/pageImages no encontrado.");
         }
 
         if (imageUrl && (imageUrl.startsWith('http://') || imageUrl.startsWith('https://'))) {
-            imgElement.src = imageUrl; // Cambia el src de la imagen
-            imgElement.onerror = () => { // Añadir onerror por si acaso
+            imgElement.src = imageUrl; 
+            imgElement.onerror = () => { 
                  console.warn(`Error al cargar la imagen de Consultora desde ${imageUrl}`);
             };
         } else {
@@ -655,7 +635,6 @@ async function loadHomepageSettingsAdmin() {
         return Promise.reject(error);
     }
 }
-
 function setupHomepageSettingsForm() {
     const form = document.getElementById('homepage-settings-form');
     const textarea = document.getElementById('hero-image-urls');
@@ -686,14 +665,9 @@ function setupHomepageSettingsForm() {
              button.disabled = false;
              return;
         }
-
         console.log("Admin: Guardando URLs del carrusel en:", configDocRef.path, urls);
-
         try {
-            // Usamos .set() con merge:true para crear el doc si no existe,
-            // o para actualizar solo el campo heroImageUrls si ya existe.
             await configDocRef.set({ heroImageUrls: urls }, { merge: true });
-
             showFeedback('¡URLs del carrusel actualizadas!', 'success', feedback, button, true);
             console.log("Admin: URLs del carrusel guardadas OK.");
         } catch (error) {
@@ -862,7 +836,7 @@ function cancelEditCategory() {
 function addCategoryButtonListeners() {
     const tableBody = document.getElementById('categories-table-body');
     if (!tableBody) return;
-    tableBody.removeEventListener('click', handleCategoryTableClick); // Limpiar anterior
+    tableBody.removeEventListener('click', handleCategoryTableClick); 
     tableBody.addEventListener('click', handleCategoryTableClick);
 }
 async function handleCategoryTableClick(e) {
@@ -954,10 +928,17 @@ async function cargarProductosAdmin() {
             const categoryName = product.categoryName || 'N/A';
             const price = typeof product.price === 'number' ? product.price.toFixed(2) : 'N/A';
             const imageUrl = (product.imageUrls && product.imageUrls[0]) ? product.imageUrls[0] : (product.imageUrl || 'https://via.placeholder.com/60?text=No+Img');
-            const description = product.description || '';
+            
+            let descriptionPreview = 'Sin detalles';
+            if(product.detailSections && product.detailSections.length > 0) {
+                descriptionPreview = product.detailSections[0].title + ": " + product.detailSections[0].content.substring(0, 30) + "...";
+            } else if (product.description) { 
+                 descriptionPreview = product.description.substring(0, 50) + "...";
+            }
+
             const row = document.createElement('tr');
             row.setAttribute('data-product-id', productId);
-            row.innerHTML = `<td><img src="${imageUrl}" alt="${name}" onerror="this.onerror=null; this.src='https://via.placeholder.com/60?text=Err';"></td><td>${name}</td><td>${brand}</td><td>${categoryName}</td><td>$${price}</td><td>${description.substring(0, 50)}${description.length > 50 ? '...' : ''}</td><td><button class="edit-btn admin-button edit-button" data-id="${productId}">Editar</button><button class="delete-btn admin-button cancel-button" data-id="${productId}">Eliminar</button></td>`;
+            row.innerHTML = `<td><img src="${imageUrl}" alt="${name}" onerror="this.onerror=null; this.src='https://via.placeholder.com/60?text=Err';"></td><td>${name}</td><td>${brand}</td><td>${categoryName}</td><td>$${price}</td><td>${descriptionPreview}</td><td><button class="edit-btn admin-button edit-button" data-id="${productId}">Editar</button><button class="delete-btn admin-button cancel-button" data-id="${productId}">Eliminar</button></td>`;
             tableBody.appendChild(row);
         });
         addAdminButtonListeners();
@@ -978,18 +959,60 @@ function setupAddProductForm() {
      const editProductIdInput = document.getElementById('edit-product-id');
      const cancelButton = document.getElementById('cancel-edit-button');
      const formTitle = document.getElementById('form-title');
+    
+    const addSectionBtn = document.getElementById('add-section-btn');
+    const detailSectionsContainer = document.getElementById('detail-sections-container');
+    
+    if (addSectionBtn && detailSectionsContainer) {
+        addSectionBtn.addEventListener('click', () => {
+             addDetailSection('', ''); 
+        });
+    }
+
+    const addDetailSection = (title, content) => {
+         const sectionId = `section-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+         const newSectionDiv = document.createElement('div');
+         newSectionDiv.className = 'detail-section-group';
+         newSectionDiv.setAttribute('data-section-id', sectionId);
+         newSectionDiv.innerHTML = `
+            <div class="form-row">
+                <div class="form-group" style="flex-grow: 1;">
+                    <label for="title-${sectionId}">Título Sección (Ej: Beneficios, Uso):</label>
+                    <input type="text" id="title-${sectionId}" class="section-title-input" value="${title}" placeholder="Beneficios">
+                </div>
+                <button type="button" class="admin-button cancel-button remove-section-btn" style="align-self: flex-end; margin-left: 10px;">Eliminar</button>
+            </div>
+            <div class="form-group">
+                <label for="content-${sectionId}">Contenido (Descripción):</label>
+                <textarea id="content-${sectionId}" class="section-content-input" rows="4" placeholder="Detalle de los beneficios...">${content}</textarea>
+            </div>
+         `;
+         detailSectionsContainer.appendChild(newSectionDiv);
+         newSectionDiv.querySelector('.remove-section-btn').addEventListener('click', (e) => {
+             e.target.closest('.detail-section-group').remove();
+         });
+    };
+    
+    window.adminProductForm = { addDetailSection }; 
+    
     if (!form || !brandSelect || !categorySelect) { console.error("Elementos form producto no encontrados."); return; }
+    
     brandSelect.addEventListener('change', async () => {
         console.log("Marca cambiada a:", brandSelect.value);
         await updateCategoryDropdown(brandSelect.value);
     });
+    
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         feedbackElement.style.display = 'none';
         submitButton.disabled = true;
         const isEditing = editProductIdInput.value !== '';
         submitButton.textContent = isEditing ? 'Actualizando...' : 'Agregando...';
+        
         const name = document.getElementById('product-name').value.trim();
+        // --- INICIO: OBTENER NUEVO CAMPO ---
+        const subtitle = document.getElementById('product-subtitle').value.trim();
+        // --- FIN: OBTENER NUEVO CAMPO ---
         const brand = brandSelect.value;
         const categoryId = categorySelect.value;
         const selectedCategoryOption = categorySelect.options[categorySelect.selectedIndex];
@@ -997,30 +1020,44 @@ function setupAddProductForm() {
         const categoryImageUrl = selectedCategoryOption?.dataset.imageUrl || '';
         const priceString = document.getElementById('product-price').value;
         const imageUrlsString = document.getElementById('product-image-urls').value.trim();
-        const description = document.getElementById('product-description').value.trim();
-        // --- ADDED: Read checkbox state ---
-        const detailsVisibleByDefault = document.getElementById('product-details-visible').checked;
-        // --- END ADDED ---
+        
+        const detailSections = [];
+        const sectionGroups = detailSectionsContainer.querySelectorAll('.detail-section-group');
+        sectionGroups.forEach(group => {
+            const title = group.querySelector('.section-title-input').value.trim();
+            const content = group.querySelector('.section-content-input').value.trim();
+            if (title && content) { 
+                detailSections.push({ title, content });
+            }
+        });
+
         const restoreButtonText = () => { submitButton.textContent = isEditing ? 'Actualizar Producto' : 'Agregar Producto'; };
+        
         if (!name || !brand || !categoryId || priceString === '' || !imageUrlsString) { showFeedback('Nombre, Marca, Categoría, Precio y URLs son obligatorios.', 'error', feedbackElement, submitButton); restoreButtonText(); submitButton.disabled = false; return; }
         if (categoryId.startsWith('--')) { showFeedback('Selecciona una categoría válida.', 'error', feedbackElement, submitButton); restoreButtonText(); submitButton.disabled = false; return; }
+        
         const price = parseFloat(priceString);
         if (isNaN(price) || price < 0) { showFeedback('Precio inválido.', 'error', feedbackElement, submitButton); restoreButtonText(); submitButton.disabled = false; return; }
+        
         const urls = imageUrlsString.split('\n').map(url => url.trim()).filter(url => url !== '' && (url.startsWith('http://') || url.startsWith('https://')));
         if (urls.length === 0) { showFeedback('Ingresa al menos una URL válida (http:// o https://).', 'error', feedbackElement, submitButton); restoreButtonText(); submitButton.disabled = false; return; }
+
         const productData = {
             name,
+            subtitle: subtitle, // --- INICIO: AÑADIR NUEVO CAMPO ---
             brand,
             categoryId,
             categoryName: categoryName.startsWith('--') ? '' : categoryName,
             categoryImageUrl: categoryImageUrl,
             price,
             imageUrls: urls,
-            imageUrl: urls[0] || '',
-            description,
-            detailsVisibleByDefault // --- ADDED: Save checkbox state ---
+            imageUrl: urls[0] || '', 
+            detailSections: detailSections 
         };
+        // --- FIN: AÑADIR NUEVO CAMPO ---
+        
         console.log("Admin: Guardando producto:", productData);
+        
         try {
             let actionPromise;
             if (isEditing) {
@@ -1037,10 +1074,10 @@ function setupAddProductForm() {
             if (isEditing) cancelEditProduct();
             else {
                 form.reset();
+                detailSectionsContainer.innerHTML = ''; 
                 categorySelect.innerHTML = '<option value="">-- Selecciona Marca Primero --</option>';
                 categorySelect.disabled = true;
                 submitButton.textContent = 'Agregar Producto';
-                document.getElementById('product-details-visible').checked = true; // Reset checkbox
             }
             await cargarProductosAdmin();
         } catch (error) {
@@ -1049,6 +1086,7 @@ function setupAddProductForm() {
             restoreButtonText();
         } finally { submitButton.disabled = false; }
     });
+    
     cancelButton.addEventListener('click', cancelEditProduct);
 }
 async function updateCategoryDropdown(selectedBrand, categoryToSelect = null) {
@@ -1112,10 +1150,14 @@ async function startEditProduct(productId) {
      const cancelButton = document.getElementById('cancel-edit-button');
      const formTitle = document.getElementById('form-title');
      const editProductIdInput = document.getElementById('edit-product-id');
+     const detailSectionsContainer = document.getElementById('detail-sections-container');
+     
     feedbackElement.style.display = 'none';
     form.reset();
+    detailSectionsContainer.innerHTML = ''; 
     categorySelect.innerHTML = '<option value="">-- Selecciona Marca Primero --</option>';
     categorySelect.disabled = true;
+
     try {
         const docRef = db.collection('products').doc(productId);
         console.log("Editando producto, leyendo de:", docRef.path);
@@ -1123,20 +1165,35 @@ async function startEditProduct(productId) {
         if (docSnap.exists) {
             const product = docSnap.data();
             console.log("Datos cargados para editar:", product);
+            
             document.getElementById('product-name').value = product.name || '';
+            // --- INICIO: CARGAR NUEVO CAMPO ---
+            document.getElementById('product-subtitle').value = product.subtitle || '';
+            // --- FIN: CARGAR NUEVO CAMPO ---
             brandSelect.value = product.brand || '';
             document.getElementById('product-price').value = product.price || 0;
             document.getElementById('product-image-urls').value = (product.imageUrls || []).join('\n');
-            document.getElementById('product-description').value = product.description || '';
-            // --- ADDED: Load checkbox state ---
-            document.getElementById('product-details-visible').checked = product.detailsVisibleByDefault || false; // Default to false if not set
-            // --- END ADDED ---
+            
+            if (product.detailSections && Array.isArray(product.detailSections)) {
+                 product.detailSections.forEach(section => {
+                     if(window.adminProductForm && typeof window.adminProductForm.addDetailSection === 'function') {
+                         window.adminProductForm.addDetailSection(section.title, section.content);
+                     }
+                 });
+            } else if (product.description) { 
+                 console.log("Detectado campo 'description' antiguo. Migrando a sección 'Detalles'.");
+                 if(window.adminProductForm && typeof window.adminProductForm.addDetailSection === 'function') {
+                    window.adminProductForm.addDetailSection('Detalles', product.description);
+                 }
+            }
+
             if (product.brand) {
                  console.log("Marca detectada:", product.brand, ". Intentando cargar y preseleccionar categoría ID:", product.categoryId);
                 await updateCategoryDropdown(product.brand, product.categoryId);
             } else {
                  console.warn("Producto sin marca definida, no se puede cargar categoría.");
             }
+            
             editProductIdInput.value = productId;
             formTitle.textContent = 'Editar Producto';
             submitButton.textContent = 'Actualizar Producto';
@@ -1163,7 +1220,10 @@ function cancelEditProduct() {
     const cancelButton = document.getElementById('cancel-edit-button');
     const formTitle = document.getElementById('form-title');
     const editProductIdInput = document.getElementById('edit-product-id');
+    const detailSectionsContainer = document.getElementById('detail-sections-container');
+    
     form.reset();
+    if(detailSectionsContainer) detailSectionsContainer.innerHTML = ''; 
     editProductIdInput.value = '';
     formTitle.textContent = 'Agregar Nuevo Producto';
     submitButton.textContent = 'Agregar Producto';
@@ -1174,7 +1234,6 @@ function cancelEditProduct() {
     submitButton.disabled = false;
     categorySelect.innerHTML = '<option value="">-- Selecciona Marca Primero --</option>';
     categorySelect.disabled = true;
-    document.getElementById('product-details-visible').checked = true; // Reset checkbox
 }
 function showFeedback(message, type, element, button, autoHide = false) {
     if (!element || !button) return;
@@ -1220,28 +1279,23 @@ async function handleAdminTableClick(e) {
     }
 }
 
-// --- Función para renderizar una tarjeta de producto (CON DESPLEGABLE) ---
+// --- Función para renderizar una tarjeta de producto (SIN DESPLEGABLE) ---
 function renderProductCard(producto, productId) {
     const name = producto.name || 'Producto Sin Nombre';
     const price = typeof producto.price === 'number' ? producto.price.toFixed(2) : 'N/A';
-    // --- Separar descripción principal de detalles ---
-    // **OPCIÓN 1: Todo 'description' va al desplegable**
-    const mainDescription = ''; // Dejamos la descripción principal vacía
-    const detailedDescription = producto.description || 'Sin detalles adicionales.';
-    // --- Fin separación ---
 
+    // --- INICIO DE MODIFICACIÓN ---
+    // Ya no necesitamos procesar 'detailSections' aquí,
+    // ni las variables 'startVisible', 'detailsInitialClass', 'buttonInitialText'.
+    // --- FIN DE MODIFICACIÓN ---
+    
     const imageUrls = Array.isArray(producto.imageUrls) && producto.imageUrls.length > 0
                       ? producto.imageUrls
                       : [producto.imageUrl || 'https://via.placeholder.com/150?text=No+Image'];
     const categoryName = producto.categoryName || '';
     const categoryImageUrl = producto.categoryImageUrl || '';
 
-    // --- MODIFICADO: Forzar estado inicial CERRADO del desplegable ---
-    // const startVisible = producto.detailsVisibleByDefault || false; // <<< LÍNEA ORIGINAL
-    const startVisible = false; // <<< SIEMPRE EMPIEZA CERRADO
-    const detailsInitialClass = startVisible ? 'producto-detalles detalles-visibles' : 'producto-detalles'; // Ahora siempre será 'producto-detalles'
-    const buttonInitialText = startVisible ? 'Ocultar detalles' : 'Mostrar detalles'; // Ahora siempre será 'Mostrar detalles'
-    // --- FIN MODIFICADO ---
+    // --- Lógica eliminada para detailsInitialClass y buttonInitialText ---
 
     let imagesHTML = '';
     imageUrls.forEach((url, index) => {
@@ -1257,8 +1311,9 @@ function renderProductCard(producto, productId) {
             </div>
         `;
     }
+    
+    // --- Lógica eliminada para detailsHTML ---
 
-    // --- MODIFICADO: Eliminar comentarios HTML visibles ---
     return `
         <div class="tarjeta-producto" data-product-id="${productId}">
             <div class="product-carousel">
@@ -1267,14 +1322,10 @@ function renderProductCard(producto, productId) {
             </div>
             <div class="producto-info">
                 ${categoryHeaderHTML}
-                <h3 class="producto-nombre">${name}</h3>
+                <a href="producto-detalle.html?id=${productId}" class="producto-nombre-link">
+                    <h3 class="producto-nombre">${name}</h3>
+                </a>
                 <p class="producto-precio">$${price}</p>
-                ${mainDescription ? `<p class="producto-descripcion-main">${mainDescription}</p>` : ''}
-
-                ${detailedDescription && detailedDescription !== 'Sin detalles adicionales.' ? `<button class="toggle-details-btn">${buttonInitialText}</button>` : ''}
-                <div class="${detailsInitialClass}">
-                    <p class="producto-descripcion-detalles">${detailedDescription.replace(/\n/g, '<br>')}</p>
-                </div>
 
                 <div class="producto-acciones">
                     <label for="cantidad-${productId}">Cant:</label>
@@ -1284,7 +1335,6 @@ function renderProductCard(producto, productId) {
             </div>
         </div>
     `;
-    // --- FIN MODIFICADO ---
 }
 
 
@@ -1292,7 +1342,6 @@ function renderProductCard(producto, productId) {
 function iniciarCatalogoPorCategorias(marca, container) {
     if (!container) return;
     mostrarCategoriasPorMarca(marca, container);
-    // Use event delegation on the container for category clicks and back button
     container.addEventListener('click', (e) => {
         const categoriaCard = e.target.closest('.tarjeta-categoria');
         if (categoriaCard) {
@@ -1301,26 +1350,24 @@ function iniciarCatalogoPorCategorias(marca, container) {
             if (categoryId) {
                 mostrarProductosPorCategoria(marca, categoryId, categoryName, container);
             }
-            return; // Stop processing if it was a category click
+            return; 
         }
 
         const volverBtn = e.target.closest('#catalogo-volver-btn');
         if (volverBtn) {
             mostrarCategoriasPorMarca(marca, container);
-            return; // Stop processing if it was a back button click
+            return; 
         }
-        // NOTE: Add to cart is handled by the body listener, no need here
     });
 }
 async function mostrarCategoriasPorMarca(marca, container) {
     const loadingMsg = container.querySelector('.loading-message');
     const header = document.getElementById('catalogo-header');
     const title = container.querySelector('h2');
-    // Clear previous content (products, categories, errors)
     container.querySelectorAll('.tarjeta-producto, .tarjeta-categoria, .app-error-message, .mensaje-vacio, #catalogo-volver-btn').forEach(el => el.remove());
     if (loadingMsg) { loadingMsg.textContent = 'Cargando categorías...'; loadingMsg.style.display = 'block'; }
-    if (header) header.innerHTML = ''; // Clear back button area
-    if (title) { // Set title based on brand
+    if (header) header.innerHTML = ''; 
+    if (title) { 
         if (marca === 'marykay') title.textContent = 'Catálogo Mary Kay';
         else if (marca === 'biogreen') title.textContent = 'Catálogo Biogreen';
         else if (marca === 'arbell') title.textContent = 'Catálogo Arbell';
@@ -1358,12 +1405,10 @@ async function mostrarCategoriasPorMarca(marca, container) {
             `;
         });
         console.log(`Cliente (${marca}): HTML de categorías generado. Insertando en el DOM...`);
-        // Insert categories AFTER the h2 title
         title.insertAdjacentHTML('afterend', categoriesHTML);
         console.log(`Cliente (${marca}): HTML insertado.`);
     } catch (error) {
         console.error(`Cliente (${marca}): ¡Error en la consulta Firestore!`, error);
-        // Display error message
         displayError(container, `Error al cargar categorías de ${marca}. Revisa ÍNDICES (link en consola F12).`);
         if (loadingMsg) loadingMsg.style.display = 'none';
     }
@@ -1371,19 +1416,15 @@ async function mostrarCategoriasPorMarca(marca, container) {
 async function mostrarProductosPorCategoria(marca, categoryId, categoryName, container) {
     const loadingMsg = container.querySelector('.loading-message');
     const header = document.getElementById('catalogo-header');
-    const title = container.querySelector('h2'); // Get the H2 title element
+    const title = container.querySelector('h2'); 
 
-    // Clear previous content (only categories, products, errors, empty messages)
-    // We keep the header and title elements
     container.querySelectorAll('.tarjeta-categoria, .tarjeta-producto, .app-error-message, .mensaje-vacio').forEach(el => el.remove());
     if (loadingMsg) { loadingMsg.textContent = 'Cargando productos...'; loadingMsg.style.display = 'block'; }
 
-    // --- MODIFICADO: Update title text and ensure header has back button ---
-    if (title) title.textContent = categoryName; // Update title text
-    if (header) { // Ensure back button is present
+    if (title) title.textContent = categoryName; 
+    if (header) { 
         header.innerHTML = '<button id="catalogo-volver-btn" class="admin-button cancel-button">‹‹ Volver a Categorías</button>';
     }
-    // --- FIN MODIFICADO ---
 
     try {
         console.log(`Cliente: Buscando productos marca=${marca} y categoriaId=${categoryId}...`);
@@ -1393,10 +1434,9 @@ async function mostrarProductosPorCategoria(marca, categoryId, categoryName, con
                                     .orderBy('name')
                                     .get();
         if (loadingMsg) loadingMsg.style.display = 'none';
-        const productDocs = querySnapshot.docs.filter(doc => !doc.id.startsWith('--config-')); // Filter out potential config docs
+        const productDocs = querySnapshot.docs.filter(doc => !doc.id.startsWith('--config-')); 
 
         if (productDocs.length === 0) {
-            // --- MODIFICADO: Insert empty message AFTER the title ---
              title.insertAdjacentHTML('afterend', '<p class="mensaje-vacio">No hay productos disponibles en esta categoría.</p>');
             return;
         }
@@ -1407,12 +1447,10 @@ async function mostrarProductosPorCategoria(marca, categoryId, categoryName, con
              const producto = doc.data(); const productId = doc.id;
              allCardsHTML += renderProductCard(producto, productId);
         });
-        // --- MODIFICADO: Insert product cards AFTER the title ---
         title.insertAdjacentHTML('afterend', allCardsHTML);
-        setupCarousels(container); // Setup carousels for the newly added products
+        setupCarousels(container); 
     } catch (error) {
         console.error(`Error GRAVE cargando productos por categoría ${categoryId}: `, error);
-        // Display error AFTER the title
         if(title) {
             displayError(title.parentElement, `Error al cargar productos. Revisa los ÍNDICES (link en consola F12).`);
         } else {
@@ -1427,13 +1465,12 @@ async function mostrarProductosPorCategoria(marca, categoryId, categoryName, con
 async function cargarProductosCliente(marca, container) {
     if (!container) { console.error("Contenedor de productos no proporcionado a cargarProductosCliente"); return; }
     let loadingMsg = container.querySelector('.loading-message');
-    if (!loadingMsg) { // If loading message doesn't exist, create it
+    if (!loadingMsg) { 
         loadingMsg = document.createElement('p');
         loadingMsg.className = 'loading-message';
-        container.prepend(loadingMsg); // Add it at the beginning
+        container.prepend(loadingMsg); 
     }
     loadingMsg.textContent = 'Cargando productos...'; loadingMsg.style.display = 'block';
-    // Clear only product cards, empty messages, and errors
     container.querySelectorAll('.tarjeta-producto, .mensaje-vacio, .app-error-message').forEach(el => el.remove());
 
     try {
@@ -1455,9 +1492,8 @@ async function cargarProductosCliente(marca, container) {
              const producto = doc.data(); const productId = doc.id;
              allCardsHTML += renderProductCard(producto, productId);
         });
-        // Append product cards to the container
         container.insertAdjacentHTML('beforeend', allCardsHTML);
-        setupCarousels(container); // Setup carousels for these products
+        setupCarousels(container); 
     } catch (error) {
         console.error(`Error GRAVE cargando productos cliente ${marca}: `, error);
         displayError(container, `Error al cargar productos de ${marca}. Revisa ÍNDICES (link en consola F12).`);
@@ -1467,7 +1503,7 @@ async function cargarProductosCliente(marca, container) {
 
 // --- Carruseles de Productos ---
 function setupCarousels(scopeElement = document) {
-     if (!scopeElement) scopeElement = document; // Default to whole document if no specific container given
+     if (!scopeElement) scopeElement = document; 
      const carousels = scopeElement.querySelectorAll('.product-carousel');
     carousels.forEach(carousel => {
         const images = carousel.querySelectorAll('.carousel-image');
@@ -1475,15 +1511,14 @@ function setupCarousels(scopeElement = document) {
         const nextButton = carousel.querySelector('.carousel-button.next');
         let currentIndex = 0;
 
-        if (images.length <= 1) { // No need for buttons if 0 or 1 image
+        if (images.length <= 1) { 
              if (prevButton) prevButton.style.display = 'none';
              if (nextButton) nextButton.style.display = 'none';
              if (images.length === 1 && !images[0].classList.contains('active')) {
-                 images[0].classList.add('active'); // Ensure first image is active if only one
+                 images[0].classList.add('active'); 
              }
-             return; // Exit setup for this carousel
+             return; 
         }
-        // Show buttons if more than 1 image
         if (prevButton) prevButton.style.display = 'block';
         if (nextButton) nextButton.style.display = 'block';
 
@@ -1491,7 +1526,6 @@ function setupCarousels(scopeElement = document) {
              images.forEach((img, i) => img.classList.toggle('active', i === index));
         }
 
-        // Clone and replace buttons to remove potential duplicate listeners
         const newPrev = prevButton?.cloneNode(true);
         const newNext = nextButton?.cloneNode(true);
 
@@ -1509,77 +1543,342 @@ function setupCarousels(scopeElement = document) {
                 showImage(currentIndex);
             });
         }
-        showImage(currentIndex); // Show the initial image (index 0)
+        showImage(currentIndex); 
     });
 }
 
-// --- Lógica del Carrito ---
-// Use event delegation on the body for add-to-cart clicks
+
+// --- +++ NUEVO: LISTENER PARA CLIC EN TARJETA (NAVEGACIÓN) +++ ---
+document.body.addEventListener('click', handleCardClick);
+
+/**
+ * Maneja los clics en cualquier parte del body para redirigir
+ * desde tarjetas de producto, excepto si se clica en un control.
+ */
+function handleCardClick(e) {
+    // 1. Encontrar la tarjeta padre
+    const card = e.target.closest('.tarjeta-producto');
+    
+    // 2. Si no se hizo clic en una tarjeta, ignorar
+    if (!card) {
+        return;
+    }
+
+    // 3. Si se hizo clic EN la tarjeta, pero SOBRE un elemento interactivo, ignorar
+    // Esto evita que la navegación se active al clicar en:
+    // - 'button' (Agregar, Mostrar detalles, flechas del carrusel)
+    // - 'a' (El enlace del nombre del producto)
+    // - 'input' / 'label' (El campo de cantidad)
+    // --- MODIFICACIÓN 1 ---
+    // Se quitó '.product-carousel' de esta lista para permitir que el clic en la imagen navegue
+    const isInteractive = e.target.closest('button, a, input, label');
+    
+    if (isInteractive) {
+        // Dejar que los otros listeners (ej. handleAddToCartClick) hagan su trabajo
+        return;
+    }
+
+    // 4. Si se hizo clic en el "espacio muerto" de la tarjeta (ej. el fondo, el precio, LA IMAGEN)...
+    // ¡Navegar!
+    const productId = card.dataset.productId;
+    if (productId) {
+        console.log("Clic en tarjeta, navegando a producto ID:", productId);
+        window.location.href = `producto-detalle.html?id=${productId}`;
+    }
+}
+// --- +++ FIN NUEVO LISTENER +++ ---
+
+
+// --- +++ LÓGICA DEL CARRITO (REFACTORIZADA) +++ ---
+
+// +++ FUNCIÓN HELPER REUTILIZABLE +++
+function addItemToCart(item, buttonElement, qtyInputElement = null) {
+    if (!item || !buttonElement) return;
+
+    console.log("Agregando al carrito:", item);
+    let carrito = getCarritoFromStorage();
+    const itemExistenteIndex = carrito.findIndex(i => i.id === item.id);
+
+    if (itemExistenteIndex > -1) { 
+        carrito[itemExistenteIndex].cantidad += item.cantidad;
+        console.log("Cantidad actualizada para:", item.nombre, "Nueva cantidad:", carrito[itemExistenteIndex].cantidad);
+    } else { 
+        carrito.push(item);
+        console.log("Nuevo item agregado:", item.nombre);
+    }
+
+    saveCarritoToStorage(carrito);
+    actualizarContadorCarrito(); 
+
+    buttonElement.textContent = '¡Agregado!';
+    buttonElement.style.backgroundColor = '#28a745'; 
+    buttonElement.style.color = 'white';
+    buttonElement.disabled = true; 
+
+    setTimeout(() => { 
+        buttonElement.textContent = 'Agregar al Carrito'; // Texto original del botón de detalle
+        if(buttonElement.closest('.tarjeta-producto')) { // Si es una tarjeta
+             buttonElement.textContent = 'Agregar';
+        }
+        buttonElement.style.backgroundColor = ''; 
+        buttonElement.style.color = '';
+        buttonElement.disabled = false;
+        if (qtyInputElement) {
+            qtyInputElement.value = 1; 
+        }
+    }, 1500);
+}
+
+
+// +++ Listener global para tarjetas de producto +++
 document.body.addEventListener('click', handleAddToCartClick);
 
 function handleAddToCartClick(e) {
-    if (!e.target.classList.contains('boton-agregar')) { return; }
-    e.preventDefault(); // Prevent default button behavior
-    e.stopPropagation(); // Stop event bubbling
+    // Esta función AHORA SÓLO reacciona a botones "boton-agregar"
+    if (!e.target.classList.contains('boton-agregar')) { 
+        return; 
+    } 
+    
+    // Y SÓLO a los que están DENTRO de una tarjeta (ignorando el de la pág. detalle)
+    const tarjeta = e.target.closest('.tarjeta-producto');
+    if (!tarjeta) {
+        return;
+    }
+    
+    e.preventDefault(); 
+    e.stopPropagation(); 
 
     const boton = e.target;
     const productId = boton.dataset.id;
-    const tarjeta = boton.closest('.tarjeta-producto'); // Find the parent product card
 
-    if (!tarjeta || !productId) {
-         console.warn("Could not find product card or product ID for add-to-cart button.");
+    if (!productId) {
+         console.warn("No se encontró ID de producto para el botón.");
          return;
     }
 
-    // Get product details from the card
+    // Obtener detalles desde la TARJETA
     const nombre = tarjeta.querySelector('.producto-nombre')?.textContent || 'Producto';
     const precioString = tarjeta.querySelector('.producto-precio')?.textContent.replace('$', '') || '0';
     const precio = parseFloat(precioString);
     const inputCantidad = tarjeta.querySelector('.producto-cantidad');
     const cantidad = inputCantidad ? parseInt(inputCantidad.value, 10) : 1;
     const imagenElement = tarjeta.querySelector('.carousel-image.active') || tarjeta.querySelector('.carousel-image');
-    const imagenSrc = imagenElement ? imagenElement.src : 'https://via.placeholder.com/80'; // Default image
+    const imagenSrc = imagenElement ? imagenElement.src : 'https://via.placeholder.com/80'; 
 
-    // Validate quantity and price
-    if (isNaN(precio) || precio < 0) { console.warn("Invalid price:", precioString); return; }
+    if (isNaN(precio) || precio < 0) { console.warn("Precio inválido:", precioString); return; }
     if (isNaN(cantidad) || cantidad <= 0) {
         alert("Por favor, ingresa una cantidad válida.");
-        if (inputCantidad) inputCantidad.value = 1; // Reset quantity visually
+        if (inputCantidad) inputCantidad.value = 1; 
         return;
      }
 
     const item = { id: productId, nombre: nombre, precio: precio, cantidad: cantidad, imagen: imagenSrc };
-    console.log("Agregando al carrito:", item);
-
-    let carrito = getCarritoFromStorage();
-    const itemExistenteIndex = carrito.findIndex(i => i.id === productId);
-
-    if (itemExistenteIndex > -1) { // Item already exists, update quantity
-        carrito[itemExistenteIndex].cantidad += cantidad;
-        console.log("Cantidad actualizada para:", nombre, "Nueva cantidad:", carrito[itemExistenteIndex].cantidad);
-    } else { // New item, add to cart
-        carrito.push(item);
-        console.log("Nuevo item agregado:", nombre);
-    }
-
-    saveCarritoToStorage(carrito);
-    actualizarContadorCarrito(); // Update cart icon count
-
-    // Visual feedback on the button
-    boton.textContent = '¡Agregado!';
-    boton.style.backgroundColor = '#28a745'; // Green color
-    boton.style.color = 'white';
-    boton.disabled = true; // Temporarily disable button
-
-    setTimeout(() => { // Revert button style after 1.5 seconds
-        boton.textContent = 'Agregar';
-        boton.style.backgroundColor = ''; // Revert to default CSS style
-        boton.style.color = ''; // Revert to default CSS style
-        boton.disabled = false;
-        if(inputCantidad) inputCantidad.value = 1; // Reset quantity input
-    }, 1500);
+    
+    addItemToCart(item, boton, inputCantidad);
 }
 
+// +++ FUNCIÓN: Cargar datos en la página de detalle +++
+async function loadProductDetails(productId) {
+    const container = document.getElementById('detalle-producto-wrapper');
+    const loadingMsg = document.querySelector('.detalle-producto-container .loading-message');
+    
+    if (!container || !loadingMsg) {
+        console.error("No se encontraron los elementos de la página de detalle.");
+        return;
+    }
+
+    const imgGrande = document.getElementById('detalle-img-grande');
+    const thumbnailsContainer = document.getElementById('detalle-thumbnails');
+    const categoriaEl = document.getElementById('detalle-categoria');
+    const nombreEl = document.getElementById('detalle-nombre');
+    // --- INICIO: OBTENER NUEVO ELEMENTO ---
+    const subtituloEl = document.getElementById('detalle-subtitulo');
+    // --- FIN: OBTENER NUEVO ELEMENTO ---
+    const precioEl = document.getElementById('detalle-precio');
+    const cantidadInput = document.getElementById('detalle-cantidad');
+    const agregarBtn = document.getElementById('detalle-agregar-btn');
+    
+    const volverBtn = document.getElementById('detalle-volver-btn');
+    const acordeonContainer = document.getElementById('detalle-acordeon-container');
+
+    // --- INICIO: FUNCIÓN HELPER DE ICONOS ---
+    function getIconForTitle(title) {
+        if (!title) return '•';
+        const lowerTitle = title.toLowerCase();
+        if (lowerTitle.includes('beneficio')) {
+            return '😊'; // O `&#x1F60A;`
+        }
+        if (lowerTitle.includes('aplicación') || lowerTitle.includes('uso')) {
+            return '✓'; // O `&#x2713;`
+        }
+        if (lowerTitle.includes('ingrediente') || lowerTitle.includes('funcione')) {
+            return '⚙️'; // O `&#x2699;`
+        }
+        return '•'; // Default
+    }
+    // --- FIN: FUNCIÓN HELPER DE ICONOS ---
+
+    try {
+        console.log(`Buscando producto con ID: ${productId}...`);
+        const docRef = db.collection('products').doc(productId);
+        const docSnap = await docRef.get();
+
+        if (!docSnap.exists) {
+            console.error(`Producto con ID ${productId} no encontrado.`);
+            displayError(document.querySelector('.detalle-producto-container'), "Error: Producto no encontrado.");
+            loadingMsg.style.display = 'none';
+            return;
+        }
+
+        const product = docSnap.data();
+        console.log("Producto encontrado:", product.name);
+
+        // 1. Poblar la información básica
+        document.title = `${product.name} - Mi Tienda`; 
+        nombreEl.textContent = product.name;
+        categoriaEl.textContent = product.categoryName || 'Sin Categoría';
+        
+        // --- INICIO: POBLAR NUEVO CAMPO ---
+        if (subtituloEl && product.subtitle) {
+            subtituloEl.textContent = product.subtitle;
+            subtituloEl.style.display = 'block';
+        } else if (subtituloEl) {
+            subtituloEl.style.display = 'none'; // Ocultar si no hay subtítulo
+        }
+        // --- FIN: POBLAR NUEVO CAMPO ---
+
+        precioEl.textContent = `$${product.price.toFixed(2)}`;
+        
+        // --- INICIO DE MODIFICACIÓN ---
+        // 2. Configurar botón "Volver"
+        if (volverBtn) {
+             // Cambiamos el 'href' para que use el historial del navegador
+             // Esto regresará al usuario a la lista de productos filtrada
+             volverBtn.href = "javascript:history.back()";
+             volverBtn.textContent = "« Volver a la Lista";
+             volverBtn.style.display = 'inline-block';
+        }
+        // --- FIN DE MODIFICACIÓN ---
+
+        // 3. Poblar Acordeón de Detalles (NUEVO ESTILO)
+        const detailSections = product.detailSections || [];
+        if (detailSections.length === 0 && product.description) { 
+            detailSections.push({ title: "Detalles", content: product.description });
+        }
+
+        if (acordeonContainer) {
+            acordeonContainer.innerHTML = ''; 
+            if (detailSections.length > 0) {
+                
+                // --- INICIO: NUEVO BLOQUE DE ESTILO DE ACORDEÓN ---
+                const accordionBox = document.createElement('div');
+                accordionBox.className = 'detalle-acordeon-links-box';
+
+                detailSections.forEach((section, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'acordeon-item-new'; // Nueva clase
+                    
+                    item.innerHTML = `
+                        <button class="acordeon-header-new">
+                            <span class="acordeon-icono-new">${getIconForTitle(section.title)}</span>
+                            <span class="acordeon-titulo-new">${section.title}</span>
+                            <span class="acordeon-arrow-new">›</span>
+                        </button>
+                        <div class="acordeon-contenido-new">
+                            <p>${section.content.replace(/\n/g, '<br>')}</p>
+                        </div>
+                    `;
+                    accordionBox.appendChild(item);
+                });
+                acordeonContainer.appendChild(accordionBox);
+                // --- FIN: NUEVO BLOQUE DE ESTILO DE ACORDEÓN ---
+
+                acordeonContainer.addEventListener('click', (e) => {
+                    const header = e.target.closest('.acordeon-header-new');
+                    if (!header) return; 
+                    
+                    const item = header.parentElement;
+                    const isActive = item.classList.contains('active');
+
+                    // Comportamiento de acordeón: cerrar todos
+                    acordeonContainer.querySelectorAll('.acordeon-item-new').forEach(i => i.classList.remove('active'));
+                    
+                    if (!isActive) {
+                        item.classList.add('active');
+                    }
+                    // Si ya estaba activo, el bucle anterior ya lo cerró.
+                });
+
+            } else {
+                 acordeonContainer.innerHTML = '<p>No hay detalles adicionales disponibles para este producto.</p>';
+            }
+        }
+
+        // 4. Configurar Imágenes (Grande y Miniaturas)
+        const imageUrls = Array.isArray(product.imageUrls) && product.imageUrls.length > 0
+                          ? product.imageUrls
+                          : ['https://via.placeholder.com/500?text=No+Image'];
+        
+        imgGrande.src = imageUrls[0]; 
+        imgGrande.alt = product.name;
+        thumbnailsContainer.innerHTML = ''; 
+
+        if (imageUrls.length > 1) {
+            imageUrls.forEach((url, index) => {
+                const thumb = document.createElement('img');
+                thumb.src = url;
+                thumb.alt = `${product.name} (miniatura ${index + 1})`;
+                thumb.className = 'detalle-thumb';
+                if (index === 0) {
+                    thumb.classList.add('active'); 
+                }
+                
+                thumb.addEventListener('click', () => {
+                    imgGrande.src = url;
+                    thumbnailsContainer.querySelectorAll('.detalle-thumb').forEach(t => t.classList.remove('active'));
+                    thumb.classList.add('active');
+                });
+                
+                thumbnailsContainer.appendChild(thumb);
+            });
+        }
+
+        // 5. Configurar el botón "Agregar al Carrito" de esta página
+        agregarBtn.dataset.id = productId; 
+        
+        agregarBtn.addEventListener('click', () => {
+            const cantidad = parseInt(cantidadInput.value, 10);
+            if (isNaN(cantidad) || cantidad <= 0) {
+                alert("Por favor, ingresa una cantidad válida.");
+                cantidadInput.value = 1;
+                return;
+            }
+            
+            const item = {
+                id: productId,
+                nombre: product.name,
+                precio: product.price,
+                cantidad: cantidad,
+                imagen: imageUrls[0] 
+            };
+            
+            addItemToCart(item, agregarBtn, cantidadInput);
+        });
+
+        // 6. Mostrar el contenido y ocultar "Cargando"
+        loadingMsg.style.display = 'none';
+        container.style.display = 'grid'; 
+
+    } catch (error) {
+        console.error(`Error GRAVE al cargar producto ${productId}:`, error);
+        displayError(document.querySelector('.detalle-producto-container'), "Error al cargar el producto. Revisa la consola.");
+        loadingMsg.style.display = 'none';
+    }
+}
+// --- FIN FUNCIÓN ---
+
+
+// --- Lógica del Carrito (Página carrito.html) ---
 function renderizarCarrito() {
     const container = document.getElementById('carrito-container');
     const totalContainer = document.getElementById('carrito-total-container');
@@ -1592,12 +1891,12 @@ function renderizarCarrito() {
     }
 
     const carrito = getCarritoFromStorage();
-    container.innerHTML = ''; // Clear previous items
-    totalContainer.innerHTML = ''; // Clear previous total
+    container.innerHTML = ''; 
+    totalContainer.innerHTML = ''; 
 
     if (carrito.length === 0) {
         container.innerHTML = '<p class="carrito-vacio">Tu carrito está vacío.</p>';
-        btnFinalizar.style.display = 'none'; // Hide buttons
+        btnFinalizar.style.display = 'none'; 
         btnVaciar.style.display = 'none';
         return;
     }
@@ -1606,7 +1905,6 @@ function renderizarCarrito() {
     carrito.forEach(item => {
         const subtotal = item.precio * item.cantidad;
         total += subtotal;
-        // Generate HTML for each cart item
         container.innerHTML += `
             <div class="carrito-item" data-id="${item.id}">
                 <img src="${item.imagen}" alt="${item.nombre}" onerror="this.onerror=null; this.src='https://via.placeholder.com/80?text=Img';">
@@ -1621,26 +1919,22 @@ function renderizarCarrito() {
         `;
     });
 
-    totalContainer.innerHTML = `<p class="carrito-total">Total: $${total.toFixed(2)}</p>`; // Display total
-    btnFinalizar.style.display = 'inline-block'; // Show buttons
+    totalContainer.innerHTML = `<p class="carrito-total">Total: $${total.toFixed(2)}</p>`; 
+    btnFinalizar.style.display = 'inline-block'; 
     btnVaciar.style.display = 'inline-block';
-    addListenersPaginaCarrito(); // Re-attach event listeners for delete/checkout/empty
+    addListenersPaginaCarrito(); 
 }
-
 function addListenersPaginaCarrito() {
-    removeListenersPaginaCarrito(); // Clean up old listeners first
+    removeListenersPaginaCarrito(); 
     document.getElementById('carrito-container')?.addEventListener('click', handleEliminarItemCarrito);
     document.getElementById('finalizar-compra')?.addEventListener('click', handleFinalizarCompra);
     document.getElementById('vaciar-carrito')?.addEventListener('click', handleVaciarCarrito);
 }
-
 function removeListenersPaginaCarrito() {
-    // Remove specific listeners to prevent duplicates if renderizarCarrito is called multiple times
     document.getElementById('carrito-container')?.removeEventListener('click', handleEliminarItemCarrito);
     document.getElementById('finalizar-compra')?.removeEventListener('click', handleFinalizarCompra);
     document.getElementById('vaciar-carrito')?.removeEventListener('click', handleVaciarCarrito);
 }
-
 function handleFinalizarCompra() {
     const carrito = getCarritoFromStorage();
     if (carrito.length === 0) return;
@@ -1650,56 +1944,48 @@ function handleFinalizarCompra() {
     carrito.forEach(item => {
         const subtotal = item.precio * item.cantidad;
         total += subtotal;
-        // Format message for WhatsApp
         mensaje += `*Producto:* ${item.nombre}\n*Cantidad:* ${item.cantidad}\n*Precio Unit:* $${item.precio.toFixed(2)}\n*Subtotal:* $${subtotal.toFixed(2)}\n-------------------------\n`;
     });
     mensaje += `\n*TOTAL DEL PEDIDO: $${total.toFixed(2)}*`;
 
-    // *** MODIFICACIÓN: Número de WhatsApp Actualizado ***
-    const numeroWhatsApp = "5493571618367"; // <-- NÚMERO ACTUALIZADO AQUÍ
+    const numeroWhatsApp = "5493571618367"; 
     const mensajeCodificado = encodeURIComponent(mensaje);
     const urlWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${mensajeCodificado}`;
-    window.open(urlWhatsApp, '_blank'); // Open WhatsApp link in new tab
+    window.open(urlWhatsApp, '_blank'); 
 }
-
 function handleVaciarCarrito() {
     if (confirm("¿Estás seguro de que quieres vaciar el carrito?")) {
-        saveCarritoToStorage([]); // Clear cart in localStorage
-        actualizarContadorCarrito(); // Update cart icon
-        renderizarCarrito(); // Re-render the cart page (showing empty message)
+        saveCarritoToStorage([]); 
+        actualizarContadorCarrito(); 
+        renderizarCarrito(); 
     }
 }
-
 function handleEliminarItemCarrito(e) {
-    if (!e.target.classList.contains('boton-eliminar')) { return; } // Only act on delete buttons
+    if (!e.target.classList.contains('boton-eliminar')) { return; } 
     const itemId = e.target.dataset.id;
     let carrito = getCarritoFromStorage();
-    carrito = carrito.filter(item => item.id !== itemId); // Filter out the item to delete
+    carrito = carrito.filter(item => item.id !== itemId); 
     saveCarritoToStorage(carrito);
     actualizarContadorCarrito();
-    renderizarCarrito(); // Re-render cart page
+    renderizarCarrito(); 
 }
-
 function actualizarContadorCarrito() {
     const carrito = getCarritoFromStorage();
-    const totalItems = carrito.reduce((total, item) => total + item.cantidad, 0); // Sum quantities
+    const totalItems = carrito.reduce((total, item) => total + item.cantidad, 0); 
     const cartLink = document.querySelector('.cart-link');
     if (cartLink) {
-        // Update text content of cart link
         cartLink.textContent = totalItems > 0 ? `🛒 Carrito (${totalItems})` : '🛒 Carrito';
     }
 }
 
 // --- Lógica de Búsqueda ---
 function setupSearchForm() {
-    // Get both search forms (desktop in top-bar, mobile in nav-links)
     const searchFormDesktop = document.getElementById('search-form');
     const searchInputDesktop = document.getElementById('search-input');
-    const searchFormMobileLi = document.getElementById('search-form-nav'); // The <li> container
-    const searchFormMobile = searchFormMobileLi?.querySelector('form'); // The <form> inside
+    const searchFormMobileLi = document.getElementById('search-form-nav'); 
+    const searchFormMobile = searchFormMobileLi?.querySelector('form'); 
     const searchInputMobile = document.getElementById('search-input-nav');
 
-    // Pre-fill input if on search page
     if (window.location.pathname.includes('busqueda')) {
         const params = new URLSearchParams(window.location.search);
         const query = params.get('q');
@@ -1710,14 +1996,12 @@ function setupSearchForm() {
         }
     }
 
-    // Function to handle redirection
     const handleSearchSubmit = (searchTerm) => {
         if (searchTerm) {
-            window.location.href = `busqueda.html?q=${encodeURIComponent(searchTerm)}`; // Ensure .html is included if needed
+            window.location.href = `busqueda.html?q=${encodeURIComponent(searchTerm)}`; 
         }
     };
 
-    // Add listener to desktop form
     if (searchFormDesktop && searchInputDesktop) {
         searchFormDesktop.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -1728,7 +2012,6 @@ function setupSearchForm() {
         console.warn("Desktop search form elements not found.");
     }
 
-    // Add listener to mobile form
     if (searchFormMobile && searchInputMobile) {
         searchFormMobile.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -1736,23 +2019,21 @@ function setupSearchForm() {
             handleSearchSubmit(searchTerm);
         });
     } else {
-         // Don't warn on login/register pages as they have different headers
          const pathname = window.location.pathname;
          if (!pathname.includes('login') && !pathname.includes('registro')) {
              console.warn("Mobile search form elements not found inside .nav-links.");
          }
     }
 }
-
 async function executeSearchPageQuery() {
     const resultsContainer = document.getElementById('search-results-list');
     const titleElement = document.getElementById('search-results-title');
     if (!resultsContainer || !titleElement) { console.error("Contenedores de resultados de búsqueda no encontrados en busqueda.html."); return; }
 
     const params = new URLSearchParams(window.location.search);
-    const searchTerm = params.get('q'); // Get search term from URL
+    const searchTerm = params.get('q'); 
 
-    if (!searchTerm) { // Handle case with no search term
+    if (!searchTerm) { 
         titleElement.textContent = 'Búsqueda Inválida';
         resultsContainer.innerHTML = '<p class="error-message">No se proporcionó un término de búsqueda.</p>';
         return;
@@ -1764,31 +2045,35 @@ async function executeSearchPageQuery() {
 
     try {
         const productsRef = db.collection('products');
-        // Get ALL products (client-side filtering)
         const querySnapshot = await productsRef.get();
 
         const matches = [];
         querySnapshot.forEach(doc => {
-            if (doc.id.startsWith('--config-')) return; // Skip config docs
+            if (doc.id.startsWith('--config-')) return; 
             const product = doc.data();
             const name = product.name ? product.name.toLowerCase() : '';
-            const description = product.description ? product.description.toLowerCase() : '';
-            // Check if search term is in name OR description
+            
+            let description = '';
+            if(product.detailSections && Array.isArray(product.detailSections)) {
+                 description = product.detailSections.map(s => s.content).join(' ').toLowerCase();
+            } else if (product.description) { 
+                 description = product.description.toLowerCase();
+            }
+
             if (name.includes(searchTermLower) || description.includes(searchTermLower)) {
                  matches.push({ id: doc.id, ...product });
             }
         });
 
-        // Sort results alphabetically by name AFTER filtering
         matches.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 
-        if (matches.length === 0) { // No matches found
+        if (matches.length === 0) { 
             resultsContainer.innerHTML = '<p class="mensaje-vacio">No se encontraron productos que coincidan con tu búsqueda.</p>';
-        } else { // Matches found, render them
+        } else { 
             let html = '';
             matches.forEach(product => { html += renderProductCard(product, product.id); });
             resultsContainer.innerHTML = html;
-            setupCarousels(resultsContainer); // Initialize carousels for search results
+            setupCarousels(resultsContainer); 
         }
     } catch (error) {
         console.error("Error durante la búsqueda en busqueda.html:", error);
@@ -1798,17 +2083,16 @@ async function executeSearchPageQuery() {
 
 // --- Manejador para botones "Mostrar/Ocultar detalles" ---
 document.body.addEventListener('click', function(event) {
+    // Este listener ahora solo maneja el botón de la tarjeta
+    // --- MODIFICACIÓN ---
+    // Este listener ahora no hace nada, ya que el botón fue eliminado
+    // de renderProductCard. Se puede dejar o eliminar, no causa daño.
     if (event.target.classList.contains('toggle-details-btn')) {
         const button = event.target;
-        // Buscar el contenedor de detalles hermano o dentro del mismo 'producto-info'
-        // --- MODIFICADO: Buscar el contenedor de detalles específico ---
-        const detailsContainer = button.nextElementSibling; // Asume que el div de detalles está justo después del botón
+        const detailsContainer = button.nextElementSibling; 
 
         if (detailsContainer && detailsContainer.classList.contains('producto-detalles')) {
-            // Alternar la clase que controla la visibilidad (definida en CSS)
             detailsContainer.classList.toggle('detalles-visibles');
-
-            // Cambiar el texto del botón
             if (detailsContainer.classList.contains('detalles-visibles')) {
                 button.textContent = 'Ocultar detalles';
             } else {
@@ -1817,31 +2101,25 @@ document.body.addEventListener('click', function(event) {
         } else {
             console.warn("No se encontró el contenedor de detalles (.producto-detalles) inmediatamente después del botón:", button);
         }
-        // --- FIN MODIFICADO ---
     }
 });
 
 
-// +++ AÑADIDO: Lógica del Menú Hamburguesa +++
+// --- Lógica del Menú Hamburguesa ---
 function setupHamburgerMenu() {
-    // Busca los elementos en el header. Asumimos que están en CADA página.
     const hamburgerBtn = document.querySelector('.hamburger-menu');
-    const navLinksMenu = document.querySelector('.nav-links'); // Este es el <ul>
+    const navLinksMenu = document.querySelector('.nav-links'); 
 
     if (hamburgerBtn && navLinksMenu) {
         hamburgerBtn.addEventListener('click', () => {
             console.log("Clic en Hamburguesa");
-            // Alterna la clase 'active' en el botón (para la animación a 'X')
             hamburgerBtn.classList.toggle('active');
-            // Alterna la clase 'active' en el menú (para mostrar/ocultar)
             navLinksMenu.classList.toggle('active');
         });
     } else {
-        // No mostramos error en login/registro donde el nav es diferente
         const pathname = window.location.pathname;
         if (!pathname.includes('login') && !pathname.includes('registro')) {
             console.warn("No se encontró '.hamburger-menu' o '.nav-links'. El menú móvil no funcionará.");
         }
     }
 }
-// +++ FIN AÑADIDO +++

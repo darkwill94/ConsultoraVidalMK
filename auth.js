@@ -1,3 +1,5 @@
+// auth.js (Completo y Modificado)
+
 document.addEventListener('DOMContentLoaded', () => {
     // Check if Firebase auth object exists
     if (typeof auth === 'undefined') {
@@ -19,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const userLoggedInMobileLi = document.getElementById('user-logged-in-mobile');
     const logoutButtonMobile = document.getElementById('logout-button-mobile');
 
-    // *** NUEVO: Mobile Email Display (in main nav) ***
+    // Mobile Email Display (in main nav)
     const userEmailSpanMobile = document.getElementById('user-email-mobile');
 
     // Login Form Elements (only if on login page)
@@ -38,26 +40,32 @@ document.addEventListener('DOMContentLoaded', () => {
     auth.onAuthStateChanged(user => {
         if (user) {
             // --- User is logged in ---
-            console.log("User logged in:", user.email);
+            console.log("User logged in:", user.email || (user.isAnonymous ? "Anonymous User" : "Unknown User")); // Loguear tambien anonimos
 
             // Update Desktop UI
             if (userLoggedOutDiv) userLoggedOutDiv.style.display = 'none';
             if (userLoggedInDiv) userLoggedInDiv.style.display = 'flex'; // Use 'flex' as per style.css
-            if (userEmailSpan) userEmailSpan.textContent = user.email;
+            if (userEmailSpan && !user.isAnonymous) userEmailSpan.textContent = user.email; // Mostrar email solo si no es anonimo
+            else if (userEmailSpan) userEmailSpan.textContent = ''; // Limpiar si es anonimo
+
 
             // Update Mobile UI (in hamburger)
             if (userLoggedOutMobileLi) userLoggedOutMobileLi.style.display = 'none';
             if (userLoggedOutMobileRegisterLi) userLoggedOutMobileRegisterLi.style.display = 'none';
             if (userLoggedInMobileLi) userLoggedInMobileLi.style.display = 'block'; // Or 'list-item'
 
-            // *** NUEVO: Update Mobile Email Display (in main nav) ***
-            if (userEmailSpanMobile) {
+            // Update Mobile Email Display (in main nav)
+            if (userEmailSpanMobile && !user.isAnonymous) { // Mostrar email solo si no es anonimo
                 userEmailSpanMobile.textContent = user.email;
                 userEmailSpanMobile.style.display = 'inline'; // Or 'block' based on final CSS
+            } else if (userEmailSpanMobile) {
+                userEmailSpanMobile.textContent = ''; // Limpiar si es anonimo
+                userEmailSpanMobile.style.display = 'none';
             }
 
-            // Show Admin Link (Desktop) if applicable
-            if (typeof ADMIN_EMAIL !== 'undefined' && user.email === ADMIN_EMAIL) {
+
+            // Show Admin Link (Desktop) if applicable and NOT anonymous
+            if (typeof ADMIN_EMAIL !== 'undefined' && !user.isAnonymous && user.email === ADMIN_EMAIL) {
                 if (adminLinkDesktop) adminLinkDesktop.style.display = 'inline';
                 console.log("Admin user detected.");
             } else {
@@ -66,24 +74,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } else {
             // --- User is logged out ---
-            console.log("User logged out.");
+            console.log("User logged out state detected. Attempting anonymous sign-in...");
 
-            // Update Desktop UI
+            // ***** INICIO DE LA MODIFICACION *****
+            // Si no hay usuario, intenta iniciar sesion anonimamente
+            auth.signInAnonymously()
+              .then(() => {
+                // El inicio anonimo fue exitoso.
+                // onAuthStateChanged se disparara DE NUEVO, esta vez entrando en el bloque 'if (user)'
+                console.log("Anonymous sign-in successful. Waiting for state change...");
+                // No actualizamos la UI aqui, esperamos al nuevo disparo de onAuthStateChanged
+              })
+              .catch((error) => {
+                // Hubo un error al intentar el inicio anonimo
+                console.error("Error during anonymous sign-in:", error);
+                // Mostrar un mensaje de error o manejarlo como prefieras
+                // Actualizar la UI para estado 'logged out' como fallback
+                if (userLoggedOutDiv) userLoggedOutDiv.style.display = 'flex';
+                if (userLoggedInDiv) userLoggedInDiv.style.display = 'none';
+                if (userEmailSpan) userEmailSpan.textContent = '';
+                if (adminLinkDesktop) adminLinkDesktop.style.display = 'none';
+                if (userLoggedOutMobileLi) userLoggedOutMobileLi.style.display = 'block';
+                if (userLoggedOutMobileRegisterLi) userLoggedOutMobileRegisterLi.style.display = 'block';
+                if (userLoggedInMobileLi) userLoggedInMobileLi.style.display = 'none';
+                if (userEmailSpanMobile) userEmailSpanMobile.style.display = 'none';
+              });
+            // ***** FIN DE LA MODIFICACION *****
+
+            // Mantenemos la actualizacion inicial de la UI a 'logged out' mientras se intenta el inicio anonimo
+            console.log("Updating UI to logged out while attempting anonymous sign-in...");
             if (userLoggedOutDiv) userLoggedOutDiv.style.display = 'flex';
             if (userLoggedInDiv) userLoggedInDiv.style.display = 'none';
             if (userEmailSpan) userEmailSpan.textContent = '';
-            if (adminLinkDesktop) adminLinkDesktop.style.display = 'none'; // Hide admin link on logout
-
-            // Update Mobile UI (in hamburger)
-            if (userLoggedOutMobileLi) userLoggedOutMobileLi.style.display = 'block'; // Or 'list-item'
-            if (userLoggedOutMobileRegisterLi) userLoggedOutMobileRegisterLi.style.display = 'block'; // Or 'list-item'
+            if (adminLinkDesktop) adminLinkDesktop.style.display = 'none';
+            if (userLoggedOutMobileLi) userLoggedOutMobileLi.style.display = 'block';
+            if (userLoggedOutMobileRegisterLi) userLoggedOutMobileRegisterLi.style.display = 'block';
             if (userLoggedInMobileLi) userLoggedInMobileLi.style.display = 'none';
-
-            // *** NUEVO: Update Mobile Email Display (in main nav) ***
-            if (userEmailSpanMobile) {
-                userEmailSpanMobile.textContent = '';
-                userEmailSpanMobile.style.display = 'none';
-            }
+            if (userEmailSpanMobile) userEmailSpanMobile.style.display = 'none';
         }
     });
 
@@ -92,7 +119,8 @@ document.addEventListener('DOMContentLoaded', () => {
         logoutButton.addEventListener('click', () => {
             auth.signOut().then(() => {
                 console.log('User signed out successfully.');
-                window.location.href = 'index.html';
+                // No redirigir aqui si queremos que inicie sesion anonima automaticamente
+                // window.location.href = 'index.html';
             }).catch((error) => {
                 console.error('Sign out error:', error);
             });
@@ -103,7 +131,8 @@ document.addEventListener('DOMContentLoaded', () => {
         logoutButtonMobile.addEventListener('click', () => {
             auth.signOut().then(() => {
                 console.log('User signed out successfully from mobile.');
-                window.location.href = 'index.html';
+                 // No redirigir aqui si queremos que inicie sesion anonima automaticamente
+                // window.location.href = 'index.html';
             }).catch((error) => {
                 console.error('Sign out error (mobile):', error);
             });
@@ -120,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then((userCredential) => {
                     console.log('Login successful:', userCredential.user.email);
                     if (loginErrorP) loginErrorP.style.display = 'none';
-                    window.location.href = 'index.html';
+                    window.location.href = 'index.html'; // Redirigir a inicio tras login exitoso
                 })
                 .catch((error) => {
                     console.error('Login error:', error.code, error.message);
@@ -149,7 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then((userCredential) => {
                     console.log('Registration successful:', userCredential.user.email);
                      if (registerErrorP) registerErrorP.style.display = 'none';
-                    window.location.href = 'index.html';
+                    window.location.href = 'index.html'; // Redirigir a inicio tras registro exitoso
                 })
                 .catch((error) => {
                     console.error('Registration error:', error.code, error.message);
@@ -176,6 +205,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 return 'La contraseña es demasiado débil (mínimo 6 caracteres).';
             case 'auth/network-request-failed':
                 return 'Error de red. Por favor, verifica tu conexión.';
+            // Añadir manejo específico para anonymous sign-in si es necesario
+             case 'auth/operation-not-allowed':
+                 return 'Inicio de sesión anónimo no está habilitado en Firebase (revisar consola).';
             default:
                 return 'Ocurrió un error. Por favor, inténtalo de nuevo.';
         }
