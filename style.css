@@ -714,9 +714,10 @@ footer p { margin: 0; font-size: 0.9rem; color: #555;}
 /* Anchos Sugeridos (Productos) */
 #products-table th:nth-child(1), #products-table td:nth-child(1) { width: 60px; text-align: center; } /* Imagen */
 #products-table th:nth-child(7), #products-table td:nth-child(7) { width: 130px; text-align: center; white-space: nowrap;} /* Acciones */
-/* Anchos Sugeridos (Categorías) */
+
+/* Anchos Sugeridos (Categorías) - v1.19 */
 #categories-table th:nth-child(1), #categories-table td:nth-child(1) { width: 60px; text-align: center; } /* Imagen */
-#categories-table th:nth-child(4), #categories-table td:nth-child(4) { width: 130px; text-align: center; white-space: nowrap;} /* Acciones */
+#categories-table th:nth-child(5), #categories-table td:nth-child(5) { width: 130px; text-align: center; white-space: nowrap;} /* Acciones */
 
 
 #loading-products-admin,
@@ -1278,3 +1279,74 @@ main#search-results-page-container .mensaje-vacio {
 
 /* --- FIN: Estilos Acordeón --- */
 /* --- FIN: NUEVOS ESTILOS v1.18 --- */
+
+
+/* --- INICIO: NUEVOS ESTILOS v1.20 --- */
+/* --- NUEVOS ESTILOS PARA PÁGINA DE LÍNEA DE COLOR MARY KAY --- */
+
+.linea-color-visual-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* 5 columnas o se ajustan */
+    gap: 1.5rem; /* Espacio entre las tarjetas */
+    justify-content: center; /* Centrar la grilla si no llena todo el ancho */
+    max-width: 1000px; /* Ancho máximo para la grilla visual */
+    margin: 2rem auto;
+}
+
+.tarjeta-categoria-visual {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid #f0f0f0; /* Borde sutil */
+}
+
+.tarjeta-categoria-visual:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.tarjeta-categoria-visual img {
+    width: 100%;
+    height: 200px; /* Altura fija para las imágenes */
+    object-fit: cover; /* Recortar la imagen para que cubra el área */
+    display: block;
+    border-bottom: 3px solid #e91e63; /* Línea rosa Mary Kay */
+}
+
+.tarjeta-categoria-visual h3 {
+    font-size: 1.1rem;
+    color: #333;
+    margin: 1rem 0.5rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+/* Ajustes responsive para las tarjetas visuales */
+@media (max-width: 768px) {
+    .linea-color-visual-grid {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); /* Más pequeñas en tablets */
+        gap: 1rem;
+    }
+    .tarjeta-categoria-visual img {
+        height: 150px;
+    }
+    .tarjeta-categoria-visual h3 {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .linea-color-visual-grid {
+        grid-template-columns: 1fr; /* Una columna en móviles pequeños */
+        gap: 1rem;
+        max-width: 300px; /* Asegurar que no sean demasiado anchas */
+    }
+    .tarjeta-categoria-visual img {
+        height: 180px;
+    }
+}
+/* --- FIN: NUEVOS ESTILOS v1.20 --- */

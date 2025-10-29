@@ -1,6 +1,7 @@
 // ==========================================================
 // === LÓGICA DEL CARRITO Y CARGA/ADMIN DE PRODUCTOS (app.js) ===
 // ==========================================================
+// v1.20 - Añadida redirección para Línea de Color MK
 
 // Variable global para el intervalo del carrusel principal
 let heroCarouselInterval = null;
@@ -221,6 +222,24 @@ function initializePageLogic() {
                  }
              });
         }
+        // *** INICIO: CAMBIO v1.20 ***
+        // Lógica para la nueva página de Línea de Color
+        // (La lógica principal está en el HTML de esa página,
+        // app.js solo necesita estar presente para las funciones globales
+        // como createProductCard, setupCarousels y auth)
+        else if (currentPage === 'linea-de-color-marykay') {
+            console.log("Ejecutando lógica para linea-de-color-marykay.html");
+            // La lógica específica de esta página está en un <script>
+            // dentro de linea-de-color-marykay.html
+            // Nos aseguramos de que el auth esté listo para que
+            // las funciones de ese script puedan usar `db`.
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    console.log("Auth listo para la página de Línea de Color.");
+                }
+            });
+        }
+        // *** FIN: CAMBIO v1.20 ***
         else {
             console.log("Página no requiere lógica especial:", currentPage);
         }
@@ -681,29 +700,86 @@ function setupHomepageSettingsForm() {
 }
 
 // --- Lógica de Admin (Categorías) ---
+async function updateParentCategoryDropdown(selectedBrand, categoryToSelect = null) {
+    const parentSelect = document.getElementById('category-parent');
+    if (!parentSelect) {
+        console.error("Dropdown 'category-parent' no encontrado.");
+        return;
+    }
+    parentSelect.innerHTML = '<option value="">-- Cargando... --</option>';
+    parentSelect.disabled = true;
+
+    if (!selectedBrand) {
+        parentSelect.innerHTML = '<option value="">-- Selecciona Marca Primero --</option>';
+        return;
+    }
+
+    try {
+        console.log(`Buscando categorías padre para: ${selectedBrand}`);
+        const querySnapshot = await db.collection('categories')
+                                    .where('brand', '==', selectedBrand)
+                                    .where('parentId', '==', null) // Solo categorías principales
+                                    .orderBy('name')
+                                    .get();
+        
+        parentSelect.innerHTML = '<option value="">-- Ninguna (Categoría Principal) --</option>'; // Opción para Top-Level
+        
+        querySnapshot.forEach(doc => {
+            const option = document.createElement('option');
+            option.value = doc.id;
+            option.textContent = doc.data().name;
+            if (categoryToSelect && doc.id === categoryToSelect) {
+                option.selected = true;
+            }
+            parentSelect.appendChild(option);
+        });
+        parentSelect.disabled = false;
+    } catch (error) {
+        console.error("Error cargando categorías padre:", error);
+        parentSelect.innerHTML = '<option value="">-- Error al cargar --</option>';
+        console.error("Posiblemente falte un índice de Firestore para la consulta de categorías padre.");
+        console.error("Índice requerido: categories | brand (ASC) | parentId (ASC) | name (ASC)");
+    }
+}
 async function loadCategoriesAdmin() {
     const tableBody = document.getElementById('categories-table-body');
     const loadingMsg = document.getElementById('loading-categories-admin');
     if (!tableBody || !loadingMsg) { console.error("Elementos tabla categorías no encontrados."); return Promise.reject("Missing table elements"); }
     loadingMsg.style.display = 'block'; loadingMsg.textContent = 'Cargando categorías...'; tableBody.innerHTML = '';
+    
     try {
         const categoriesRef = db.collection('categories');
+        
+        const allCategoriesSnap = await categoriesRef.get();
+        const categoryNameMap = new Map();
+        allCategoriesSnap.forEach(doc => {
+            categoryNameMap.set(doc.id, doc.data().name);
+        });
+
         console.log("Admin: Leyendo categorías de:", categoriesRef.path);
-        const querySnapshot = await categoriesRef.orderBy('name').get();
+        const querySnapshot = await categoriesRef.orderBy('brand').orderBy('name').get();
+
         loadingMsg.style.display = 'none';
         if (querySnapshot.empty) {
-            tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No hay categorías creadas.</td></tr>'; return Promise.resolve();
+            tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay categorías creadas.</td></tr>'; return Promise.resolve();
         }
+        
         querySnapshot.forEach(doc => {
             const category = doc.data(); const categoryId = doc.id;
             const name = category.name || 'N/D'; const brand = category.brand || 'N/D';
             const imageUrl = category.imageUrl || 'https://via.placeholder.com/60?text=No+Img';
+            
+            const parentId = category.parentId;
+            const parentName = parentId ? (categoryNameMap.get(parentId) || 'ID: ' + parentId) : '--';
+
             const row = document.createElement('tr');
             row.setAttribute('data-category-id', categoryId);
+            
             row.innerHTML = `
                 <td><img src="${imageUrl}" alt="${name}" class="admin-table-thumbnail" onerror="this.onerror=null; this.src='https://via.placeholder.com/60?text=Err';"></td>
                 <td>${name}</td>
                 <td>${brand}</td>
+                <td>${parentName}</td>
                 <td><button class="edit-category-btn admin-button edit-button" data-id="${categoryId}">Editar</button><button class="delete-category-btn admin-button cancel-button" data-id="${categoryId}">Eliminar</button></td>
             `;
             tableBody.appendChild(row);
@@ -728,7 +804,15 @@ function setupCategoryForm() {
      const cancelButton = document.getElementById('cancel-edit-category-button');
      const formTitle = document.getElementById('category-form-title');
      const editCategoryIdInput = document.getElementById('edit-category-id');
-    if (!form || !nameInput || !brandSelect || !imageUrlInput) { console.error("Elementos form categoría no encontrados."); return; }
+     
+     const parentSelect = document.getElementById('category-parent');
+
+    if (!form || !nameInput || !brandSelect || !imageUrlInput || !parentSelect) { console.error("Elementos form categoría no encontrados."); return; }
+    
+    brandSelect.addEventListener('change', () => {
+        updateParentCategoryDropdown(brandSelect.value);
+    });
+
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         feedbackElement.style.display = 'none';
@@ -737,13 +821,23 @@ function setupCategoryForm() {
         const categoryBrand = brandSelect.value;
         const categoryImageUrl = imageUrlInput.value.trim();
         const editingId = editCategoryIdInput.value;
+        
+        const parentId = parentSelect.value;
+
         submitButton.textContent = editingId ? 'Actualizando...' : 'Agregando...';
         if (!categoryName || !categoryBrand) {
             showFeedback('Nombre y Marca son obligatorios.', 'error', feedbackElement, submitButton);
             submitButton.textContent = editingId ? 'Actualizar Categoría' : 'Agregar Categoría';
             submitButton.disabled = false; return;
         }
-        const categoryData = { name: categoryName, brand: categoryBrand, imageUrl: categoryImageUrl || '' };
+        
+        const categoryData = { 
+            name: categoryName, 
+            brand: categoryBrand, 
+            imageUrl: categoryImageUrl || '',
+            parentId: parentId || null 
+        };
+        
         const categoriesRef = db.collection('categories');
         console.log("Admin: Guardando categoría en:", categoriesRef.path, categoryData);
         try {
@@ -759,7 +853,12 @@ function setupCategoryForm() {
             showFeedback(editingId ? '¡Categoría actualizada!' : '¡Categoría agregada!', 'success', feedbackElement, submitButton, true);
             console.log("Admin: Categoría guardada OK.");
             if (editingId) cancelEditCategory();
-            else { form.reset(); submitButton.textContent = 'Agregar Categoría'; }
+            else { 
+                form.reset(); 
+                parentSelect.innerHTML = '<option value="">-- Selecciona Marca Primero --</option>';
+                parentSelect.disabled = true;
+                submitButton.textContent = 'Agregar Categoría'; 
+            }
             await loadCategoriesAdmin();
             const productBrandSelect = document.getElementById('product-brand');
             if (productBrandSelect.value === categoryBrand) {
@@ -787,6 +886,9 @@ async function startEditCategory(categoryId) {
      const cancelButton = document.getElementById('cancel-edit-category-button');
      const formTitle = document.getElementById('category-form-title');
      const editCategoryIdInput = document.getElementById('edit-category-id');
+     
+     const parentSelect = document.getElementById('category-parent');
+
     feedbackElement.style.display = 'none';
     try {
         const categoryRef = db.collection('categories').doc(categoryId);
@@ -799,6 +901,9 @@ async function startEditCategory(categoryId) {
             brandSelect.value = category.brand || '';
             imageUrlInput.value = category.imageUrl || '';
             editCategoryIdInput.value = categoryId;
+
+            await updateParentCategoryDropdown(category.brand, category.parentId);
+
             formTitle.textContent = 'Editar Categoría';
             submitButton.textContent = 'Actualizar Categoría';
             submitButton.classList.remove('add-button'); submitButton.classList.add('edit-button');
@@ -822,9 +927,18 @@ function cancelEditCategory() {
     const cancelButton = document.getElementById('cancel-edit-category-button');
     const formTitle = document.getElementById('category-form-title');
     const editCategoryIdInput = document.getElementById('edit-category-id');
+    
+    const parentSelect = document.getElementById('category-parent');
+
     form.reset();
     editCategoryIdInput.value = '';
     if(imageUrlInput) imageUrlInput.value = '';
+
+    if(parentSelect) {
+        parentSelect.innerHTML = '<option value="">-- Selecciona Marca Primero --</option>';
+        parentSelect.disabled = true;
+    }
+
     formTitle.textContent = 'Agregar Nueva Categoría';
     submitButton.textContent = 'Agregar Categoría';
     submitButton.classList.remove('edit-button');
@@ -849,11 +963,19 @@ async function handleCategoryTableClick(e) {
     } else if (target.classList.contains('delete-category-btn')) {
         const row = target.closest('tr');
         const categoryName = row?.querySelector('td:nth-child(2)')?.textContent || 'esta categoría';
-        const productCheck = await db.collection('products').where('categoryId', '==', categoryId).limit(1).get();
-        if (!productCheck.empty) {
-            alert(`No se puede eliminar la categoría "${categoryName}" porque todavía hay productos (${productCheck.docs[0].data().name}, etc.) usándola.`);
+        
+        const childCategoryCheck = await db.collection('categories').where('parentId', '==', categoryId).limit(1).get();
+        if (!childCategoryCheck.empty) {
+            alert(`No se puede eliminar la categoría "${categoryName}" porque es una Categoría Padre (ej: de "${childCategoryCheck.docs[0].data().name}"). Primero elimina o reasigna sus subcategorías.`);
             return;
         }
+
+        const productCheck = await db.collection('products').where('categoryId', '==', categoryId).limit(1).get();
+        if (!productCheck.empty) {
+            alert(`No se puede eliminar la categoría "${categoryName}" porque todavía hay productos (ej: "${productCheck.docs[0].data().name}") usándola.`);
+            return;
+        }
+        
         if (confirm(`¿Eliminar categoría "${categoryName}"?\n¡Esto NO se puede deshacer!`)) {
             try {
                 const categoryRef = db.collection('categories').doc(categoryId);
@@ -1010,9 +1132,7 @@ function setupAddProductForm() {
         submitButton.textContent = isEditing ? 'Actualizando...' : 'Agregando...';
         
         const name = document.getElementById('product-name').value.trim();
-        // --- INICIO: OBTENER NUEVO CAMPO ---
         const subtitle = document.getElementById('product-subtitle').value.trim();
-        // --- FIN: OBTENER NUEVO CAMPO ---
         const brand = brandSelect.value;
         const categoryId = categorySelect.value;
         const selectedCategoryOption = categorySelect.options[categorySelect.selectedIndex];
@@ -1044,7 +1164,7 @@ function setupAddProductForm() {
 
         const productData = {
             name,
-            subtitle: subtitle, // --- INICIO: AÑADIR NUEVO CAMPO ---
+            subtitle: subtitle, 
             brand,
             categoryId,
             categoryName: categoryName.startsWith('--') ? '' : categoryName,
@@ -1054,7 +1174,6 @@ function setupAddProductForm() {
             imageUrl: urls[0] || '', 
             detailSections: detailSections 
         };
-        // --- FIN: AÑADIR NUEVO CAMPO ---
         
         console.log("Admin: Guardando producto:", productData);
         
@@ -1107,7 +1226,9 @@ async function updateCategoryDropdown(selectedBrand, categoryToSelect = null) {
     try {
         const categoriesRef = db.collection('categories');
         console.log("Consultando categorías en:", categoriesRef.path, "para marca:", selectedBrand);
+        
         const querySnapshot = await categoriesRef.where('brand', '==', selectedBrand).get();
+
         categorySelect.innerHTML = '';
         if (querySnapshot.empty) {
             console.log("No se encontraron categorías para", selectedBrand);
@@ -1117,18 +1238,55 @@ async function updateCategoryDropdown(selectedBrand, categoryToSelect = null) {
              console.log(`${querySnapshot.size} categorías encontradas para ${selectedBrand}`);
             categorySelect.innerHTML = '<option value="">-- Selecciona Categoría --</option>';
             const categories = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            categories.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-            categories.forEach(category => {
-                const option = document.createElement('option');
-                option.value = category.id;
-                option.textContent = category.name;
-                option.dataset.imageUrl = category.imageUrl || '';
-                if (categoryToSelect && category.id === categoryToSelect) {
-                    option.selected = true;
-                     console.log("Preseleccionada categoría:", category.name);
+            
+            const categoryMap = new Map();
+            const topLevel = [];
+            categories.forEach(c => {
+                if (c.parentId === null) {
+                    topLevel.push(c);
                 }
-                categorySelect.appendChild(option);
+                categoryMap.set(c.id, c);
             });
+            
+            topLevel.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+            topLevel.forEach(parent => {
+                const parentOption = document.createElement('option');
+                parentOption.value = parent.id;
+                parentOption.textContent = parent.name;
+                parentOption.dataset.imageUrl = parent.imageUrl || '';
+                if (categoryToSelect && parent.id === categoryToSelect) {
+                    parentOption.selected = true;
+                }
+                categorySelect.appendChild(parentOption);
+                
+                categories.filter(c => c.parentId === parent.id)
+                          .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+                          .forEach(child => {
+                              const childOption = document.createElement('option');
+                              childOption.value = child.id;
+                              childOption.textContent = `  ↳ ${child.name}`; // Indentación
+                              childOption.dataset.imageUrl = child.imageUrl || '';
+                              if (categoryToSelect && child.id === categoryToSelect) {
+                                  childOption.selected = true;
+                              }
+                              categorySelect.appendChild(childOption);
+                          });
+            });
+            
+             categories.filter(c => c.parentId !== null && !categoryMap.has(c.parentId))
+                       .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+                       .forEach(orphan => {
+                            const orphanOption = document.createElement('option');
+                            orphanOption.value = orphan.id;
+                            orphanOption.textContent = `? ${orphan.name}`; // Marcar como huérfana
+                            orphanOption.dataset.imageUrl = orphan.imageUrl || '';
+                            if (categoryToSelect && orphan.id === categoryToSelect) {
+                                orphanOption.selected = true;
+                            }
+                            categorySelect.appendChild(orphanOption);
+                       });
+
             categorySelect.disabled = false;
         }
     } catch (error) {
@@ -1167,9 +1325,7 @@ async function startEditProduct(productId) {
             console.log("Datos cargados para editar:", product);
             
             document.getElementById('product-name').value = product.name || '';
-            // --- INICIO: CARGAR NUEVO CAMPO ---
             document.getElementById('product-subtitle').value = product.subtitle || '';
-            // --- FIN: CARGAR NUEVO CAMPO ---
             brandSelect.value = product.brand || '';
             document.getElementById('product-price').value = product.price || 0;
             document.getElementById('product-image-urls').value = (product.imageUrls || []).join('\n');
@@ -1279,15 +1435,13 @@ async function handleAdminTableClick(e) {
     }
 }
 
-// --- Función para renderizar una tarjeta de producto (SIN DESPLEGABLE) ---
-function renderProductCard(producto, productId) {
+// --- Función para renderizar una tarjeta de producto ---
+// *** INICIO: CAMBIO v1.20 ***
+// Renombrada de renderProductCard a createProductCard
+function createProductCard(producto, productId) {
+// *** FIN: CAMBIO v1.20 ***
     const name = producto.name || 'Producto Sin Nombre';
     const price = typeof producto.price === 'number' ? producto.price.toFixed(2) : 'N/A';
-
-    // --- INICIO DE MODIFICACIÓN ---
-    // Ya no necesitamos procesar 'detailSections' aquí,
-    // ni las variables 'startVisible', 'detailsInitialClass', 'buttonInitialText'.
-    // --- FIN DE MODIFICACIÓN ---
     
     const imageUrls = Array.isArray(producto.imageUrls) && producto.imageUrls.length > 0
                       ? producto.imageUrls
@@ -1295,7 +1449,6 @@ function renderProductCard(producto, productId) {
     const categoryName = producto.categoryName || '';
     const categoryImageUrl = producto.categoryImageUrl || '';
 
-    // --- Lógica eliminada para detailsInitialClass y buttonInitialText ---
 
     let imagesHTML = '';
     imageUrls.forEach((url, index) => {
@@ -1312,43 +1465,65 @@ function renderProductCard(producto, productId) {
         `;
     }
     
-    // --- Lógica eliminada para detailsHTML ---
+    // *** INICIO: CAMBIO v1.20 ***
+    // La tarjeta ahora es un DIV, no un string, para poder añadir listeners
+    const card = document.createElement('div');
+    card.className = 'tarjeta-producto';
+    card.dataset.productId = productId;
+    
+    card.innerHTML = `
+        <div class="product-carousel">
+            ${imagesHTML}
+            ${imageUrls.length > 1 ? '<button class="carousel-button prev">&lt;</button><button class="carousel-button next">&gt;</button>' : ''}
+        </div>
+        <div class="producto-info">
+            ${categoryHeaderHTML}
+            <a href="producto-detalle.html?id=${productId}" class="producto-nombre-link">
+                <h3 class="producto-nombre">${name}</h3>
+            </a>
+            <p class="producto-precio">$${price}</p>
 
-    return `
-        <div class="tarjeta-producto" data-product-id="${productId}">
-            <div class="product-carousel">
-                ${imagesHTML}
-                ${imageUrls.length > 1 ? '<button class="carousel-button prev">&lt;</button><button class="carousel-button next">&gt;</button>' : ''}
-            </div>
-            <div class="producto-info">
-                ${categoryHeaderHTML}
-                <a href="producto-detalle.html?id=${productId}" class="producto-nombre-link">
-                    <h3 class="producto-nombre">${name}</h3>
-                </a>
-                <p class="producto-precio">$${price}</p>
-
-                <div class="producto-acciones">
-                    <label for="cantidad-${productId}">Cant:</label>
-                    <input type="number" id="cantidad-${productId}" class="producto-cantidad" value="1" min="1">
-                    <button class="boton-agregar" data-id="${productId}">Agregar</button>
-                </div>
+            <div class="producto-acciones">
+                <label for="cantidad-${productId}">Cant:</label>
+                <input type="number" id="cantidad-${productId}" class="producto-cantidad" value="1" min="1">
+                <button class="boton-agregar" data-id="${productId}">Agregar</button>
             </div>
         </div>
     `;
+    return card;
+    // *** FIN: CAMBIO v1.20 ***
 }
+// *** INICIO: CAMBIO v1.20 ***
+// Exponer la función globalmente para que linea-de-color-marykay.html la pueda usar
+window.createProductCard = createProductCard;
+// *** FIN: CAMBIO v1.20 ***
 
 
 // --- Lógica de Catálogo por Categorías (Cliente) ---
 function iniciarCatalogoPorCategorias(marca, container) {
     if (!container) return;
+    
     mostrarCategoriasPorMarca(marca, container);
+
     container.addEventListener('click', (e) => {
+        
         const categoriaCard = e.target.closest('.tarjeta-categoria');
         if (categoriaCard) {
             const categoryId = categoriaCard.dataset.categoryId;
             const categoryName = categoriaCard.dataset.categoryName;
+
+            // *** INICIO: CAMBIO v1.20 ***
+            // Redirección especial para "Línea de Color Mary Kay"
+            const currentPage = window.location.pathname.split('/').pop().replace('.html', '');
+            if (currentPage === 'productos-marykay' && categoryName.trim().toLowerCase() === 'línea de color mary kay') {
+                console.log("Redirigiendo a página especial de Línea de Color...");
+                window.location.href = 'linea-de-color-marykay.html';
+                return; // Detener ejecución
+            }
+            // *** FIN: CAMBIO v1.20 ***
+
             if (categoryId) {
-                mostrarProductosPorCategoria(marca, categoryId, categoryName, container);
+                mostrarSubCategoriasOProductos(marca, categoryId, categoryName, container);
             }
             return; 
         }
@@ -1364,9 +1539,11 @@ async function mostrarCategoriasPorMarca(marca, container) {
     const loadingMsg = container.querySelector('.loading-message');
     const header = document.getElementById('catalogo-header');
     const title = container.querySelector('h2');
+    
     container.querySelectorAll('.tarjeta-producto, .tarjeta-categoria, .app-error-message, .mensaje-vacio, #catalogo-volver-btn').forEach(el => el.remove());
     if (loadingMsg) { loadingMsg.textContent = 'Cargando categorías...'; loadingMsg.style.display = 'block'; }
     if (header) header.innerHTML = ''; 
+    
     if (title) { 
         if (marca === 'marykay') title.textContent = 'Catálogo Mary Kay';
         else if (marca === 'biogreen') title.textContent = 'Catálogo Biogreen';
@@ -1376,21 +1553,24 @@ async function mostrarCategoriasPorMarca(marca, container) {
     }
 
     try {
-        console.log(`Cliente (${marca}): Intentando consultar categorías...`);
+        console.log(`Cliente (${marca}): Consultando categorías PRINCIPALES...`);
         const querySnapshot = await db.collection('categories')
                                     .where('brand', '==', marca)
+                                    .where('parentId', '==', null) // SOLO CATEGORÍAS PRINCIPALES
                                     .orderBy('name')
                                     .get();
+        
         console.log(`Cliente (${marca}): Consulta completada. Documentos encontrados: ${querySnapshot.size}`);
         if (loadingMsg) loadingMsg.style.display = 'none';
 
         if (querySnapshot.empty) {
-            console.log(`Cliente (${marca}): No se encontraron categorías en Firestore.`);
-            container.insertAdjacentHTML('beforeend', '<p class="mensaje-vacio">No hay categorías disponibles para esta marca.</p>');
+            console.log(`Cliente (${marca}): No se encontraron categorías principales en Firestore.`);
+            console.log(`Cliente (${marca}): No hay categorías principales. Buscando productos huerfanos...`);
+            await mostrarProductosHuerfanos(marca, container);
             return;
         }
 
-        console.log(`Cliente (${marca}): ${querySnapshot.size} categorías encontradas. Procesando...`);
+        console.log(`Cliente (${marca}): ${querySnapshot.size} categorías principales encontradas. Procesando...`);
         let categoriesHTML = '';
         querySnapshot.forEach(doc => {
             const categoria = doc.data();
@@ -1404,12 +1584,92 @@ async function mostrarCategoriasPorMarca(marca, container) {
                 </div>
             `;
         });
-        console.log(`Cliente (${marca}): HTML de categorías generado. Insertando en el DOM...`);
         title.insertAdjacentHTML('afterend', categoriesHTML);
-        console.log(`Cliente (${marca}): HTML insertado.`);
+        
     } catch (error) {
         console.error(`Cliente (${marca}): ¡Error en la consulta Firestore!`, error);
         displayError(container, `Error al cargar categorías de ${marca}. Revisa ÍNDICES (link en consola F12).`);
+        console.error("¡REVISA ESTO! Necesitas un índice en Firestore: categories | brand (ASC) | parentId (ASC) | name (ASC)");
+        if (loadingMsg) loadingMsg.style.display = 'none';
+    }
+}
+async function mostrarProductosHuerfanos(marca, container) {
+    const loadingMsg = container.querySelector('.loading-message');
+    try {
+        const querySnapshot = await db.collection('products')
+                                    .where('brand', '==', marca)
+                                    .orderBy('name')
+                                    .get();
+        if (loadingMsg) loadingMsg.style.display = 'none';
+        const productDocs = querySnapshot.docs.filter(doc => !doc.id.startsWith('--config-')); 
+
+        if (productDocs.length === 0) {
+            container.insertAdjacentHTML('beforeend', '<p class="mensaje-vacio">No hay categorías ni productos disponibles para esta marca.</p>');
+            return;
+        }
+
+        console.log(`Cliente (fallback): ${productDocs.length} productos encontrados.`);
+        productDocs.forEach((doc) => {
+             const producto = doc.data(); const productId = doc.id;
+             // *** INICIO: CAMBIO v1.20 ***
+             const card = createProductCard(producto, productId);
+             container.appendChild(card);
+             // *** FIN: CAMBIO v1.20 ***
+        });
+        setupCarousels(container); 
+    } catch (error) {
+         console.error(`Error GRAVE cargando productos cliente ${marca}: `, error);
+        displayError(container, `Error al cargar productos de ${marca}. Revisa ÍNDICES (link en consola F12).`);
+        if (loadingMsg) loadingMsg.style.display = 'none';
+    }
+}
+async function mostrarSubCategoriasOProductos(marca, parentId, parentName, container) {
+    const loadingMsg = container.querySelector('.loading-message');
+    const header = document.getElementById('catalogo-header');
+    const title = container.querySelector('h2'); 
+
+    container.querySelectorAll('.tarjeta-categoria, .tarjeta-producto, .app-error-message, .mensaje-vacio').forEach(el => el.remove());
+    if (loadingMsg) { loadingMsg.textContent = 'Cargando...'; loadingMsg.style.display = 'block'; }
+
+    if (title) title.textContent = parentName; 
+    if (header) { 
+        header.innerHTML = '<button id="catalogo-volver-btn" class="admin-button cancel-button">‹‹ Volver a Categorías Principales</button>';
+    }
+
+    try {
+        console.log(`Cliente: Buscando sub-categorías de: ${parentId}`);
+        const subCatQuery = await db.collection('categories')
+                                  .where('parentId', '==', parentId)
+                                  .orderBy('name')
+                                  .get();
+        
+        if (loadingMsg) loadingMsg.style.display = 'none';
+
+        if (!subCatQuery.empty) {
+            console.log(`Encontradas ${subCatQuery.size} sub-categorías.`);
+            let categoriesHTML = '';
+            subCatQuery.forEach(doc => {
+                const categoria = doc.data();
+                const id = doc.id;
+                const imageUrl = categoria.imageUrl || 'https://via.placeholder.com/150?text=Sin+Imagen';
+                const name = categoria.name || 'Categoría sin nombre';
+                categoriesHTML += `
+                    <div class="tarjeta-categoria" data-category-id="${id}" data-category-name="${name}">
+                        <img src="${imageUrl}" alt="${name}" onerror="this.onerror=null; this.src='https://via.placeholder.com/150?text=Error+Img';">
+                        <h3>${name}</h3>
+                    </div>
+                `;
+            });
+            title.insertAdjacentHTML('afterend', categoriesHTML);
+        } else {
+            console.log(`No hay sub-categorías. Buscando productos para: ${parentId}`);
+            await mostrarProductosPorCategoria(marca, parentId, parentName, container);
+        }
+
+    } catch (error) {
+        console.error(`Error GRAVE buscando sub-categorías o productos: `, error);
+        displayError(container, `Error al cargar. Revisa los ÍNDICES (link en consola F12).`);
+        console.error("¡REVISA ESTO! Necesitas un índice en Firestore: categories | parentId (ASC) | name (ASC)");
         if (loadingMsg) loadingMsg.style.display = 'none';
     }
 }
@@ -1423,7 +1683,7 @@ async function mostrarProductosPorCategoria(marca, categoryId, categoryName, con
 
     if (title) title.textContent = categoryName; 
     if (header) { 
-        header.innerHTML = '<button id="catalogo-volver-btn" class="admin-button cancel-button">‹‹ Volver a Categorías</button>';
+        header.innerHTML = '<button id="catalogo-volver-btn" class="admin-button cancel-button">‹‹ Volver a Categorías Principales</button>';
     }
 
     try {
@@ -1442,12 +1702,21 @@ async function mostrarProductosPorCategoria(marca, categoryId, categoryName, con
         }
 
         console.log(`Cliente: ${productDocs.length} productos encontrados.`);
-        let allCardsHTML = '';
         productDocs.forEach((doc) => {
              const producto = doc.data(); const productId = doc.id;
-             allCardsHTML += renderProductCard(producto, productId);
+             // *** INICIO: CAMBIO v1.20 ***
+             const card = createProductCard(producto, productId);
+             // Insertar la tarjeta después del título
+             title.insertAdjacentElement('afterend', card);
+             // *** FIN: CAMBIO v1.20 ***
         });
-        title.insertAdjacentHTML('afterend', allCardsHTML);
+        // Revertir el orden si se insertaron al revés (insertAdjacent afterend)
+        const productCards = container.querySelectorAll('.tarjeta-producto');
+        if(productCards.length > 1) {
+             const parent = productCards[0].parentNode;
+             const reversedCards = Array.from(productCards).reverse();
+             reversedCards.forEach(card => parent.appendChild(card));
+        }
         setupCarousels(container); 
     } catch (error) {
         console.error(`Error GRAVE cargando productos por categoría ${categoryId}: `, error);
@@ -1487,12 +1756,13 @@ async function cargarProductosCliente(marca, container) {
             return;
         }
         console.log(`Cliente (plano): ${productDocs.length} productos encontrados.`);
-        let allCardsHTML = '';
         productDocs.forEach((doc) => {
              const producto = doc.data(); const productId = doc.id;
-             allCardsHTML += renderProductCard(producto, productId);
+             // *** INICIO: CAMBIO v1.20 ***
+             const card = createProductCard(producto, productId);
+             container.appendChild(card);
+             // *** FIN: CAMBIO v1.20 ***
         });
-        container.insertAdjacentHTML('beforeend', allCardsHTML);
         setupCarousels(container); 
     } catch (error) {
         console.error(`Error GRAVE cargando productos cliente ${marca}: `, error);
@@ -1546,40 +1816,25 @@ function setupCarousels(scopeElement = document) {
         showImage(currentIndex); 
     });
 }
+// *** INICIO: CAMBIO v1.20 ***
+// Exponer la función globalmente para que linea-de-color-marykay.html la pueda usar
+window.setupCarousels = setupCarousels;
+// *** FIN: CAMBIO v1.20 ***
 
 
 // --- +++ NUEVO: LISTENER PARA CLIC EN TARJETA (NAVEGACIÓN) +++ ---
 document.body.addEventListener('click', handleCardClick);
 
-/**
- * Maneja los clics en cualquier parte del body para redirigir
- * desde tarjetas de producto, excepto si se clica en un control.
- */
 function handleCardClick(e) {
-    // 1. Encontrar la tarjeta padre
     const card = e.target.closest('.tarjeta-producto');
-    
-    // 2. Si no se hizo clic en una tarjeta, ignorar
     if (!card) {
         return;
     }
-
-    // 3. Si se hizo clic EN la tarjeta, pero SOBRE un elemento interactivo, ignorar
-    // Esto evita que la navegación se active al clicar en:
-    // - 'button' (Agregar, Mostrar detalles, flechas del carrusel)
-    // - 'a' (El enlace del nombre del producto)
-    // - 'input' / 'label' (El campo de cantidad)
-    // --- MODIFICACIÓN 1 ---
-    // Se quitó '.product-carousel' de esta lista para permitir que el clic en la imagen navegue
     const isInteractive = e.target.closest('button, a, input, label');
     
     if (isInteractive) {
-        // Dejar que los otros listeners (ej. handleAddToCartClick) hagan su trabajo
         return;
     }
-
-    // 4. Si se hizo clic en el "espacio muerto" de la tarjeta (ej. el fondo, el precio, LA IMAGEN)...
-    // ¡Navegar!
     const productId = card.dataset.productId;
     if (productId) {
         console.log("Clic en tarjeta, navegando a producto ID:", productId);
@@ -1590,8 +1845,6 @@ function handleCardClick(e) {
 
 
 // --- +++ LÓGICA DEL CARRITO (REFACTORIZADA) +++ ---
-
-// +++ FUNCIÓN HELPER REUTILIZABLE +++
 function addItemToCart(item, buttonElement, qtyInputElement = null) {
     if (!item || !buttonElement) return;
 
@@ -1629,17 +1882,12 @@ function addItemToCart(item, buttonElement, qtyInputElement = null) {
     }, 1500);
 }
 
-
-// +++ Listener global para tarjetas de producto +++
 document.body.addEventListener('click', handleAddToCartClick);
 
 function handleAddToCartClick(e) {
-    // Esta función AHORA SÓLO reacciona a botones "boton-agregar"
     if (!e.target.classList.contains('boton-agregar')) { 
         return; 
     } 
-    
-    // Y SÓLO a los que están DENTRO de una tarjeta (ignorando el de la pág. detalle)
     const tarjeta = e.target.closest('.tarjeta-producto');
     if (!tarjeta) {
         return;
@@ -1656,7 +1904,6 @@ function handleAddToCartClick(e) {
          return;
     }
 
-    // Obtener detalles desde la TARJETA
     const nombre = tarjeta.querySelector('.producto-nombre')?.textContent || 'Producto';
     const precioString = tarjeta.querySelector('.producto-precio')?.textContent.replace('$', '') || '0';
     const precio = parseFloat(precioString);
@@ -1677,7 +1924,6 @@ function handleAddToCartClick(e) {
     addItemToCart(item, boton, inputCantidad);
 }
 
-// +++ FUNCIÓN: Cargar datos en la página de detalle +++
 async function loadProductDetails(productId) {
     const container = document.getElementById('detalle-producto-wrapper');
     const loadingMsg = document.querySelector('.detalle-producto-container .loading-message');
@@ -1691,9 +1937,7 @@ async function loadProductDetails(productId) {
     const thumbnailsContainer = document.getElementById('detalle-thumbnails');
     const categoriaEl = document.getElementById('detalle-categoria');
     const nombreEl = document.getElementById('detalle-nombre');
-    // --- INICIO: OBTENER NUEVO ELEMENTO ---
     const subtituloEl = document.getElementById('detalle-subtitulo');
-    // --- FIN: OBTENER NUEVO ELEMENTO ---
     const precioEl = document.getElementById('detalle-precio');
     const cantidadInput = document.getElementById('detalle-cantidad');
     const agregarBtn = document.getElementById('detalle-agregar-btn');
@@ -1701,7 +1945,6 @@ async function loadProductDetails(productId) {
     const volverBtn = document.getElementById('detalle-volver-btn');
     const acordeonContainer = document.getElementById('detalle-acordeon-container');
 
-    // --- INICIO: FUNCIÓN HELPER DE ICONOS ---
     function getIconForTitle(title) {
         if (!title) return '•';
         const lowerTitle = title.toLowerCase();
@@ -1716,7 +1959,6 @@ async function loadProductDetails(productId) {
         }
         return '•'; // Default
     }
-    // --- FIN: FUNCIÓN HELPER DE ICONOS ---
 
     try {
         console.log(`Buscando producto con ID: ${productId}...`);
@@ -1733,34 +1975,25 @@ async function loadProductDetails(productId) {
         const product = docSnap.data();
         console.log("Producto encontrado:", product.name);
 
-        // 1. Poblar la información básica
         document.title = `${product.name} - Mi Tienda`; 
         nombreEl.textContent = product.name;
         categoriaEl.textContent = product.categoryName || 'Sin Categoría';
         
-        // --- INICIO: POBLAR NUEVO CAMPO ---
         if (subtituloEl && product.subtitle) {
             subtituloEl.textContent = product.subtitle;
             subtituloEl.style.display = 'block';
         } else if (subtituloEl) {
-            subtituloEl.style.display = 'none'; // Ocultar si no hay subtítulo
+            subtituloEl.style.display = 'none'; 
         }
-        // --- FIN: POBLAR NUEVO CAMPO ---
 
         precioEl.textContent = `$${product.price.toFixed(2)}`;
         
-        // --- INICIO DE MODIFICACIÓN ---
-        // 2. Configurar botón "Volver"
         if (volverBtn) {
-             // Cambiamos el 'href' para que use el historial del navegador
-             // Esto regresará al usuario a la lista de productos filtrada
              volverBtn.href = "javascript:history.back()";
              volverBtn.textContent = "« Volver a la Lista";
              volverBtn.style.display = 'inline-block';
         }
-        // --- FIN DE MODIFICACIÓN ---
 
-        // 3. Poblar Acordeón de Detalles (NUEVO ESTILO)
         const detailSections = product.detailSections || [];
         if (detailSections.length === 0 && product.description) { 
             detailSections.push({ title: "Detalles", content: product.description });
@@ -1770,7 +2003,6 @@ async function loadProductDetails(productId) {
             acordeonContainer.innerHTML = ''; 
             if (detailSections.length > 0) {
                 
-                // --- INICIO: NUEVO BLOQUE DE ESTILO DE ACORDEÓN ---
                 const accordionBox = document.createElement('div');
                 accordionBox.className = 'detalle-acordeon-links-box';
 
@@ -1791,7 +2023,6 @@ async function loadProductDetails(productId) {
                     accordionBox.appendChild(item);
                 });
                 acordeonContainer.appendChild(accordionBox);
-                // --- FIN: NUEVO BLOQUE DE ESTILO DE ACORDEÓN ---
 
                 acordeonContainer.addEventListener('click', (e) => {
                     const header = e.target.closest('.acordeon-header-new');
@@ -1800,13 +2031,11 @@ async function loadProductDetails(productId) {
                     const item = header.parentElement;
                     const isActive = item.classList.contains('active');
 
-                    // Comportamiento de acordeón: cerrar todos
                     acordeonContainer.querySelectorAll('.acordeon-item-new').forEach(i => i.classList.remove('active'));
                     
                     if (!isActive) {
                         item.classList.add('active');
                     }
-                    // Si ya estaba activo, el bucle anterior ya lo cerró.
                 });
 
             } else {
@@ -1814,7 +2043,6 @@ async function loadProductDetails(productId) {
             }
         }
 
-        // 4. Configurar Imágenes (Grande y Miniaturas)
         const imageUrls = Array.isArray(product.imageUrls) && product.imageUrls.length > 0
                           ? product.imageUrls
                           : ['https://via.placeholder.com/500?text=No+Image'];
@@ -1843,7 +2071,6 @@ async function loadProductDetails(productId) {
             });
         }
 
-        // 5. Configurar el botón "Agregar al Carrito" de esta página
         agregarBtn.dataset.id = productId; 
         
         agregarBtn.addEventListener('click', () => {
@@ -1865,7 +2092,6 @@ async function loadProductDetails(productId) {
             addItemToCart(item, agregarBtn, cantidadInput);
         });
 
-        // 6. Mostrar el contenido y ocultar "Cargando"
         loadingMsg.style.display = 'none';
         container.style.display = 'grid'; 
 
@@ -2070,9 +2296,12 @@ async function executeSearchPageQuery() {
         if (matches.length === 0) { 
             resultsContainer.innerHTML = '<p class="mensaje-vacio">No se encontraron productos que coincidan con tu búsqueda.</p>';
         } else { 
-            let html = '';
-            matches.forEach(product => { html += renderProductCard(product, product.id); });
-            resultsContainer.innerHTML = html;
+            matches.forEach(product => { 
+                // *** INICIO: CAMBIO v1.20 ***
+                const card = createProductCard(product, product.id);
+                resultsContainer.appendChild(card);
+                // *** FIN: CAMBIO v1.20 ***
+            });
             setupCarousels(resultsContainer); 
         }
     } catch (error) {
@@ -2083,10 +2312,6 @@ async function executeSearchPageQuery() {
 
 // --- Manejador para botones "Mostrar/Ocultar detalles" ---
 document.body.addEventListener('click', function(event) {
-    // Este listener ahora solo maneja el botón de la tarjeta
-    // --- MODIFICACIÓN ---
-    // Este listener ahora no hace nada, ya que el botón fue eliminado
-    // de renderProductCard. Se puede dejar o eliminar, no causa daño.
     if (event.target.classList.contains('toggle-details-btn')) {
         const button = event.target;
         const detailsContainer = button.nextElementSibling; 

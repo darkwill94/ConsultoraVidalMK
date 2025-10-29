@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Administración - Mi Tienda</title>
-    <link rel="stylesheet" href="style.css?v=1.18"> <style>
+    <link rel="stylesheet" href="style.css?v=1.19"> <style>
         /* Estilos inline específicos si los hubiera */
     </style>
 </head>
@@ -169,8 +169,9 @@
                  <h4 id="category-form-title">Agregar Nueva Categoría</h4>
                  <input type="hidden" id="edit-category-id"> <div class="form-group">
                      <label for="category-name">Nombre de la Categoría:</label>
-                     <input type="text" id="category-name" required placeholder="Ej: Perfumes, Maquillaje">
+                     <input type="text" id="category-name" required placeholder="Ej: Perfumes, Maquillaje, Rostro">
                  </div>
+                 
                  <div class="form-row">
                      <div class="form-group">
                          <label for="category-brand">Marca Asociada:</label>
@@ -184,10 +185,17 @@
                          </select>
                      </div>
                      <div class="form-group">
-                         <label for="category-image-url">URL de la Imagen de Categoría:</label>
-                         <input type="text" id="category-image-url" placeholder="https://.../imagen_categoria.jpg">
-                         <small>Opcional. Imagen que representará esta categoría.</small>
+                         <label for="category-parent">Categoría Padre (Opcional):</label>
+                         <select id="category-parent" disabled>
+                             <option value="">-- Selecciona Marca Primero --</option>
+                         </select>
+                         <small>Déjalo en "Ninguna" para crear una categoría principal (ej: Maquillaje).</small>
                      </div>
+                 </div>
+                 <div class="form-group">
+                     <label for="category-image-url">URL de la Imagen de Categoría:</label>
+                     <input type="text" id="category-image-url" placeholder="https://.../imagen_categoria.jpg">
+                     <small>Opcional. Imagen que representará esta categoría.</small>
                  </div>
                  <button type="submit" class="admin-button add-button" id="submit-category-button">Agregar Categoría</button>
                  <button type="button" class="admin-button cancel-button" id="cancel-edit-category-button" style="display: none;">Cancelar Edición</button>
@@ -203,6 +211,7 @@
                                  <th>Imagen</th>
                                  <th>Nombre Categoría</th>
                                  <th>Marca</th>
+                                 <th>Categoría Padre</th>
                                  <th>Acciones</th>
                              </tr>
                          </thead>
@@ -336,7 +345,7 @@
       }
       const ADMIN_EMAIL = 'ortolanimichael@gmail.com'; // 👈 ¡TU EMAIL DE ADMIN!
     </script>
-    <script src="app.js?v=1.18" defer></script> <script src="auth.js" defer></script>
+    <script src="app.js?v=1.19" defer></script> <script src="auth.js" defer></script>
 
 </body>
 </html>
